@@ -60,3 +60,42 @@ jobs:
           IMAGE_VERSION=$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout)
           docker tag $IMAGE_NAME ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:$IMAGE_VERSION
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:$IMAGE_VERSION
+  publish_in_heroku_registry:
+    name: Publish in Heroku Registry
+    runs-on: ubuntu-latest
+    needs: [build]
+    env:
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      HEROKU_APP: ${{ secrets.HEROKU_APP }}
+      IMAGE_NAME: the-social-network-planner
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+      - name: Download Jar from previous job
+        uses: actions/download-artifact@v1
+        with:
+          name: target
+      - name: Build Docker Image
+        run: docker build -t $IMAGE_NAME .
+      - name: Install Heroku CLI
+        run: curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
+      - name: Change image name to point to Heroku registry
+        run: docker tag $IMAGE_NAME registry.heroku.com/$HEROKU_APP/web
+      - name: Login in Heroku container registry
+        run: heroku container:login
+      - name: Push image to Heroku Registry
+        run: docker push registry.heroku.com/$HEROKU_APP/web
+  deploy_to_heroku:
+    name: Deploy to Heroku
+    runs-on: ubuntu-latest
+    needs: [publish_in_heroku_registry]
+    env:
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      HEROKU_APP: ${{ secrets.HEROKU_APP }}
+    steps:
+      - name: Install Heroku CLI
+        run: curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
+      - name: Login in Heroku
+        run: heroku container:login
+      - name: Deploy to Heroku
+        run: heroku container:release web
