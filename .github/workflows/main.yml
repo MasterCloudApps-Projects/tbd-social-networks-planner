@@ -1,0 +1,62 @@
+name: Main workflow
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test-all:
+    name: Run test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+    - name: Run example app test
+      run: mvn -B -Dtest=TheSocialNetworkPlannerApplicationTests test
+  build:
+    name: Build Java application
+    runs-on: ubuntu-20.04
+    needs: [test-all]
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+    - name: Build native with Maven
+      run: mvn -B package
+    - name: Upload jar for next job
+      uses: actions/upload-artifact@v2
+      with:
+        name: target
+        path: target
+        retention-days: 1      
+  publish_in_dockerhub:
+    name: Publish in DockerHub
+    runs-on: ubuntu-20.04
+    needs: [build]
+    env:
+      IMAGE_NAME: the-social-network-planner
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+      - name: Download jar from previous job
+        uses: actions/download-artifact@v2
+        with:
+          name: target
+          path: target
+      - name: Build image
+        run: docker build -t $IMAGE_NAME .
+      - name: Login to DockerHub
+        run: docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" -p "${{ secrets.DOCKERHUB_TOKEN }}" 
+      - name: Push image to DockerHub
+        run: |
+          IMAGE_VERSION=$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout)
+          docker tag $IMAGE_NAME ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:$IMAGE_VERSION
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:$IMAGE_VERSION
