@@ -1,0 +1,36 @@
+name: Main PR workflow
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test-all:
+    name: Run test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Run twitter client test
+        run: mvn -B -Dtest=TwitterClientTest test
+      - name: Run twitter service test
+        run: mvn -B -Dtest=TwitterServiceTest test
+  build:
+    name: Build Java application
+    runs-on: ubuntu-20.04
+    needs: [test-all]
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Build native with Maven
+        run: mvn -B package
