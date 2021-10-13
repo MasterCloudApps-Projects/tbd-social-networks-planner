@@ -28,17 +28,16 @@ public class TwitterAuthentication {
         log.info("consumerSecret: {}", consumerSecret);
         log.info("accessToken: {}", accessToken);
         log.info("screenName: {}", screenName);
-        log.info("accessTokenSecret: {}",accessTokenSecret);
+        log.info("accessTokenSecret: {}", accessTokenSecret);
 
-        File file = new File("src/main/resources/twitter4j.properties");
+        String propertiesName = "twitter4j.properties";
         Properties properties = new Properties();
         InputStream inputStream = null;
         OutputStream outputStream = null;
         try {
-            if (file.exists()) {
-                inputStream = new FileInputStream(file);
-                properties.load(inputStream);
-            }
+            inputStream = getClass().getClassLoader().getResourceAsStream(propertiesName);
+            properties.load(inputStream);
+
             if (null != consumerKey && null != consumerSecret && null != accessToken && null != screenName && null != accessTokenSecret) {
                 properties.setProperty("oauth.consumerKey", consumerKey);
                 properties.setProperty("oauth.consumerSecret", consumerSecret);
@@ -50,7 +49,6 @@ public class TwitterAuthentication {
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
-            System.exit(-1);
         } finally {
             if (inputStream != null) {
                 try {
