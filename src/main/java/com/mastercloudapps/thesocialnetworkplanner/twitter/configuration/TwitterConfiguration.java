@@ -6,7 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import twitter4j.Twitter;
+import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
+import twitter4j.conf.ConfigurationBuilder;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,10 +30,15 @@ public class TwitterConfiguration {
     @Value("${twitter.screenName}")
     private String screenName;
 
+    ConfigurationBuilder cb = new ConfigurationBuilder();
+
     @Bean
-    public Twitter Twitter() {
+    public Twitter Twitter() throws TwitterException {
         initializeTwitter4jVariables();
-        return new TwitterFactory().getInstance();
+        TwitterFactory twitterFactory = new TwitterFactory(cb.build());
+        log.info(twitterFactory.getInstance().getOAuthAccessToken().getToken());
+        log.info(twitterFactory.getInstance().getOAuthAccessToken().getTokenSecret());
+        return twitterFactory.getInstance();
     }
 
     private void initializeTwitter4jVariables() {
@@ -41,38 +48,12 @@ public class TwitterConfiguration {
         log.info("screenName: {}", screenName);
         log.info("accessTokenSecret: {}", accessTokenSecret);
 
-        String propertiesName = "twitter4j.properties";
-        Properties properties = new Properties();
-        InputStream inputStream = null;
-        OutputStream outputStream = null;
-        try {
-            inputStream = getClass().getClassLoader().getResourceAsStream(propertiesName);
-            properties.load(inputStream);
-
-            if (null != consumerKey && null != consumerSecret && null != accessToken && null != screenName && null != accessTokenSecret) {
-                properties.setProperty("oauth.consumerKey", consumerKey);
-                properties.setProperty("oauth.consumerSecret", consumerSecret);
-                properties.setProperty("oauth.accessToken", accessToken);
-                properties.setProperty("oauth.screenName", screenName);
-                properties.setProperty("oauth.accessTokenSecret", accessTokenSecret);
-                outputStream = new FileOutputStream("src/main/resources/twitter4j.properties");
-                properties.store(outputStream, "twitter4j.properties");
-            }
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException ignore) {
-                }
-            }
-            if (outputStream != null) {
-                try {
-                    outputStream.close();
-                } catch (IOException ignore) {
-                }
-            }
+        if (null != consumerKey && null != consumerSecret && null != accessToken && null != screenName && null != accessTokenSecret) {
+            cb.setDebugEnabled(true)
+                    .setOAuthConsumerKey(consumerKey)
+                    .setOAuthConsumerSecret(consumerSecret)
+                    .setOAuthAccessToken(accessToken)
+                    .setOAuthAccessTokenSecret(accessTokenSecret);
         }
     }
 }
