@@ -50,11 +50,12 @@ public class TwitterConfiguration {
 
         if (null != consumerKey && null != consumerSecret && null != accessToken && null != screenName && null != accessTokenSecret) {
             cb.setDebugEnabled(true)
-                    .setOAuthConsumerKey(consumerKey)
-                    .setOAuthConsumerSecret(consumerSecret)
-                    .setOAuthAccessToken(accessToken)
-                    .setOAuthAccessTokenSecret(accessTokenSecret);
+                    .setOAuthConsumerKey(consumerKey.replace(" ",""))
+                    .setOAuthConsumerSecret(consumerSecret.replace(" ",""))
+                    .setOAuthAccessToken(accessToken.replace(" ",""))
+                    .setOAuthAccessTokenSecret(accessTokenSecret.replace(" ",""));
         }
     }
+    
 }
 
