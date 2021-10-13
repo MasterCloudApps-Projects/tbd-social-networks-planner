@@ -1,5 +1,6 @@
 package com.mastercloudapps.thesocialnetworkplanner.twitter.configuration;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -8,6 +9,7 @@ import java.io.*;
 import java.util.Properties;
 
 @Component
+@Log4j2
 public class TwitterAuthentication {
     @Value("${oauth.accessTokenSecret}")
     private String accessTokenSecret;
@@ -22,6 +24,12 @@ public class TwitterAuthentication {
 
     @PostConstruct
     private void initializeTwitter4jVariables() {
+        log.info("consumerKey: {}", consumerKey);
+        log.info("consumerSecret: {}", consumerSecret);
+        log.info("accessToken: {}", accessToken);
+        log.info("screenName: {}", screenName);
+        log.info("accessTokenSecret: {}",accessTokenSecret);
+
         File file = new File("src/main/resources/twitter4j.properties");
         Properties properties = new Properties();
         InputStream inputStream = null;
