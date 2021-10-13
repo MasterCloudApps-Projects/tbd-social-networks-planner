@@ -6,7 +6,6 @@ import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClie
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.UnauthorizedTwitterClientException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRequest;
-import org.ff4j.FF4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
