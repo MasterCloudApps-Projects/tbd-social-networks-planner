@@ -13,28 +13,28 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Validated
-@RequestMapping(value = "/twitter")
-public class TwitterController {
+@RequestMapping(value = "/twitter/tweet")
+public class TweetController {
     private final TwitterService twitterService;
 
-    public TwitterController(TwitterService twitterService) {
+    public TweetController(TwitterService twitterService) {
         this.twitterService = twitterService;
     }
 
-    @GetMapping("/tweet/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<TweetResponse> getTweet(@PathVariable String id) throws TwitterClientException {
         TweetResponse tweetResponse = this.twitterService.getTweet(id);
         return ResponseEntity.ok(tweetResponse);
     }
 
-    @PostMapping("/tweet")
+    @PostMapping()
     public ResponseEntity<TweetResponse> postTweet(@RequestBody TweetRequest tweetRequest) throws
             TwitterClientException {
         TweetResponse tweetResponse = this.twitterService.postTweet(tweetRequest);
         return ResponseEntity.ok(tweetResponse);
     }
 
-    @DeleteMapping("/tweet/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<TweetResponse> deleteTweet(@PathVariable String id) throws TwitterClientException {
         TweetResponse tweetResponse = this.twitterService.deleteTweet(id);
         return ResponseEntity.ok(tweetResponse);

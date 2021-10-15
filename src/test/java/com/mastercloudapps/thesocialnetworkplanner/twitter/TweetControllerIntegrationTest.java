@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc(addFilters = false)
-public class TwitterControllerIntegrationTest {
+public class TweetControllerIntegrationTest {
 
     @Autowired
     protected MockMvc mockMvc;
@@ -31,8 +31,7 @@ public class TwitterControllerIntegrationTest {
     private TwitterService twitterService;
 
     private static final String TWEET_ID = "tweetId";
-    private static final String BASE_URL = "/twitter";
-    private static final String TWEET_URL = "/tweet";
+    private static final String BASE_URL = "/twitter/tweet";
 
     @Test
     public void getTweet_shouldReturnTweetInformation() throws Exception {
@@ -42,7 +41,7 @@ public class TwitterControllerIntegrationTest {
                 .text("This is a new tweet.")
                 .build());
 
-        mockMvc.perform(get(BASE_URL + TWEET_URL + "/" + TWEET_ID))
+        mockMvc.perform(get(BASE_URL + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
                 .andExpect(jsonPath("$.id").value("id"))
@@ -53,7 +52,7 @@ public class TwitterControllerIntegrationTest {
     public void getTweet_shouldThrowBadRequestException() throws Exception {
         when(this.twitterService.getTweet(any())).thenThrow(TwitterBadRequestException.class);
 
-        mockMvc.perform(get(BASE_URL + TWEET_URL + "/" + TWEET_ID))
+        mockMvc.perform(get(BASE_URL + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 
@@ -66,7 +65,7 @@ public class TwitterControllerIntegrationTest {
                 .text("This is a new tweet.")
                 .build());
 
-        mockMvc.perform(post(BASE_URL + TWEET_URL).contentType(MediaType.APPLICATION_JSON).content(jsonRequest))
+        mockMvc.perform(post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content(jsonRequest))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
                 .andExpect(jsonPath("$.id").value("id"))
@@ -78,7 +77,7 @@ public class TwitterControllerIntegrationTest {
         String jsonRequest = "{ \"text\" : \"This is a new tweet\" }";
         when(this.twitterService.postTweet(any())).thenThrow(TwitterBadRequestException.class);
 
-        mockMvc.perform(post(BASE_URL + TWEET_URL).contentType(MediaType.APPLICATION_JSON).content(jsonRequest))
+        mockMvc.perform(post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content(jsonRequest))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 
@@ -90,7 +89,7 @@ public class TwitterControllerIntegrationTest {
                 .text("This is a new tweet.")
                 .build());
 
-        mockMvc.perform(delete(BASE_URL + TWEET_URL + "/" + TWEET_ID))
+        mockMvc.perform(delete(BASE_URL + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
                 .andExpect(jsonPath("$.id").value("id"))
@@ -101,7 +100,7 @@ public class TwitterControllerIntegrationTest {
     public void deleteTweet_shouldThrowBadRequestException() throws Exception {
         when(this.twitterService.deleteTweet(any())).thenThrow(TwitterBadRequestException.class);
 
-        mockMvc.perform(delete(BASE_URL + TWEET_URL + "/" + TWEET_ID))
+        mockMvc.perform(delete(BASE_URL + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 
