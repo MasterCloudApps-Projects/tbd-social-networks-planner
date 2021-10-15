@@ -67,6 +67,23 @@ public class TwitterServiceTest {
         Assertions.assertNull(tweetResponse);
     }
 
+    @Test
+    public void deleteTweet_shouldReturnTweetInformation() throws TwitterClientException {
+        Mockito.when(this.twitterClient.deleteTweet(anyString())).thenReturn(new Status());
+        TweetResponse tweetResponse = this.twitterService.deleteTweet(TWEET_ID_STRING);
+
+        Assertions.assertEquals(tweetResponse.getUsername(), "andrea_juanma");
+        Assertions.assertEquals(tweetResponse.getText(), "This is a new tweet.");
+        Assertions.assertEquals(tweetResponse.getId(), "0");
+    }
+
+    @Test(expected = TwitterBadRequestException.class)
+    public void deleteTweet_shouldThrowTwitterBadRequestException() throws TwitterClientException {
+        Mockito.when(this.twitterClient.deleteTweet(anyString())).thenReturn(null);
+        TweetResponse tweetResponse = this.twitterService.deleteTweet(TWEET_ID_STRING);
+
+        Assertions.assertNull(tweetResponse);
+    }
     private TweetRequest tweetRequest() {
         return TweetRequest.builder().text("This is a new tweet.").build();
     }

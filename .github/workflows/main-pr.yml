@@ -17,10 +17,9 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Run twitter client test
-        run: mvn -B -Dtest=TwitterClientTest test
-      - name: Run twitter service test
-        run: mvn -B -Dtest=TwitterServiceTest test
+      - name: Run all tests
+        run: mvn -B test
+
   build:
     name: Build Java application
     runs-on: ubuntu-20.04

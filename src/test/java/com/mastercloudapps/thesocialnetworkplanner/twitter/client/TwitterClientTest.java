@@ -84,4 +84,30 @@ public class TwitterClientTest {
         this.twitterClient.postTweet("This is a tweet.");
     }
 
+    @Test
+    public void deleteTweet_shouldReturnTweetInformation() throws TwitterClientException, TwitterException {
+        Mockito.when(twitter.destroyStatus(anyLong())).thenReturn(new Status());
+        twitter4j.Status response = this.twitterClient.deleteTweet(TWEET_ID_STRING);
+        Assertions.assertThat(response).isNotNull();
+    }
+
+    @Test
+    public void deleteTweet_shouldReturnNull() throws TwitterClientException, TwitterException {
+        Mockito.when(twitter.destroyStatus(anyLong())).thenReturn(new Status());
+        twitter4j.Status response = this.twitterClient.deleteTweet(null);
+        Assertions.assertThat(response).isNull();
+    }
+
+    @Test(expected = TweetNotFoundException.class)
+    public void deleteTweet_shouldThrowTwitterException() throws TwitterClientException, TwitterException {
+        Mockito.when(twitter.destroyStatus(anyLong())).thenThrow(new TwitterException("message", null, 404));
+        this.twitterClient.deleteTweet(TWEET_ID_STRING);
+    }
+
+    @Test(expected = TwitterClientException.class)
+    public void deleteTweet_shouldThrowTwitterClientException() throws TwitterClientException, TwitterException {
+        Mockito.when(twitter.destroyStatus(anyLong())).thenThrow(new TwitterException("message", null, 400));
+        this.twitterClient.deleteTweet(TWEET_ID_STRING);
+    }
+
 }
