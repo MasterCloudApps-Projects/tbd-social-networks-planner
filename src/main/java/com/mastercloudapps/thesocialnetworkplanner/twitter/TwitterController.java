@@ -34,6 +34,12 @@ public class TwitterController {
         return ResponseEntity.ok(tweetResponse);
     }
 
+    @DeleteMapping("/tweet/{id}")
+    public ResponseEntity<TweetResponse> deleteTweet(@PathVariable String id) throws TwitterClientException {
+        TweetResponse tweetResponse = this.twitterService.deleteTweet(id);
+        return ResponseEntity.ok(tweetResponse);
+    }
+
     @ExceptionHandler(TweetNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<String> handleTweetNotFoundException(TweetNotFoundException ex) {

@@ -39,4 +39,14 @@ public class TwitterService {
         }
     }
 
+    public TweetResponse deleteTweet(String tweetId) throws TwitterClientException {
+        Status status = this.twitterClient.deleteTweet(tweetId);
+
+        if (status != null) {
+            return new TweetResponse(String.valueOf(status.getId()), status.getUser().getScreenName(), status.getText());
+        } else {
+            throw new TwitterBadRequestException();
+        }
+    }
+
 }

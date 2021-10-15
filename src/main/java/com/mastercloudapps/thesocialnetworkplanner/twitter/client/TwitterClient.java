@@ -62,4 +62,27 @@ public class TwitterClient {
             return null;
         }
     }
+
+    public Status deleteTweet(String tweetId) throws TwitterClientException {
+        Status status;
+        if (tweetId != null) {
+            try {
+                status = twitter.destroyStatus(Long.parseLong(tweetId));
+                log.info("Showing @" + status.getUser().getScreenName() + "'s tweet.");
+                log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
+            } catch (TwitterException te) {
+                log.info("Twitter [delete-tweet] throw exception: " + te.getMessage());
+                if (Objects.equals(te.getStatusCode(), 404)) {
+                    throw new TweetNotFoundException();
+                }
+                throw new TwitterClientException();
+            }
+        } else {
+            log.info("Tweet id is empty.");
+            return null;
+        }
+
+        return status;
+    }
+
 }
