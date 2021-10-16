@@ -84,6 +84,43 @@ public class TwitterServiceTest {
 
         Assertions.assertNull(tweetResponse);
     }
+
+    @Test
+    public void retweet_shouldReturnTweetInformation() throws TwitterClientException {
+        Mockito.when(this.twitterClient.retweet(anyString())).thenReturn(new Status());
+        TweetResponse tweetResponse = this.twitterService.retweet(TWEET_ID_STRING);
+
+        Assertions.assertEquals(tweetResponse.getUsername(), "andrea_juanma");
+        Assertions.assertEquals(tweetResponse.getText(), "This is a new tweet.");
+        Assertions.assertEquals(tweetResponse.getId(), "0");
+    }
+
+    @Test(expected = TwitterBadRequestException.class)
+    public void retweet_shouldThrowTwitterBadRequestException() throws TwitterClientException {
+        Mockito.when(this.twitterClient.retweet(anyString())).thenReturn(null);
+        TweetResponse tweetResponse = this.twitterService.retweet(TWEET_ID_STRING);
+
+        Assertions.assertNull(tweetResponse);
+    }
+
+    @Test
+    public void undoRetweet_shouldReturnTweetInformation() throws TwitterClientException {
+        Mockito.when(this.twitterClient.undoRetweet(anyString())).thenReturn(new Status());
+        TweetResponse tweetResponse = this.twitterService.undoRetweet(TWEET_ID_STRING);
+
+        Assertions.assertEquals(tweetResponse.getUsername(), "andrea_juanma");
+        Assertions.assertEquals(tweetResponse.getText(), "This is a new tweet.");
+        Assertions.assertEquals(tweetResponse.getId(), "0");
+    }
+
+    @Test(expected = TwitterBadRequestException.class)
+    public void undoRetweet_shouldThrowTwitterBadRequestException() throws TwitterClientException {
+        Mockito.when(this.twitterClient.undoRetweet(anyString())).thenReturn(null);
+        TweetResponse tweetResponse = this.twitterService.undoRetweet(TWEET_ID_STRING);
+
+        Assertions.assertNull(tweetResponse);
+    }
+
     private TweetRequest tweetRequest() {
         return TweetRequest.builder().text("This is a new tweet.").build();
     }

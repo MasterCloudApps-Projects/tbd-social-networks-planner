@@ -6,6 +6,7 @@ import twitter4j.*;
 import java.util.Date;
 
 public class Status implements twitter4j.Status {
+    private boolean isRetweeted;
 
     @Override
     public Date getCreatedAt() {
@@ -74,7 +75,7 @@ public class Status implements twitter4j.Status {
 
     @Override
     public boolean isRetweeted() {
-        return false;
+        return this.isRetweeted;
     }
 
     @Override
@@ -190,5 +191,9 @@ public class Status implements twitter4j.Status {
     @Override
     public int getAccessLevel() {
         return 0;
+    }
+
+    public void setIsRetweeted(boolean isRetweeted){
+        this.isRetweeted = isRetweeted;
     }
 }
