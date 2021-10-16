@@ -3,6 +3,8 @@ package com.mastercloudapps.thesocialnetworkplanner.twitter;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.RetweetForbiddenException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRepliesResponse;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRequest;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +42,12 @@ public class TwitterActionsController {
     @DeleteMapping("/like/{id}")
     public ResponseEntity<TweetResponse> undoLike(@PathVariable String id) throws TwitterClientException {
         TweetResponse tweetResponse = this.twitterService.undoLike(id);
+        return ResponseEntity.ok(tweetResponse);
+    }
+
+    @PostMapping("/reply/{id}")
+    public ResponseEntity<TweetRepliesResponse> replyTweet(@PathVariable String id, @RequestBody TweetRequest tweetRequest) throws TwitterClientException {
+        TweetRepliesResponse tweetResponse = this.twitterService.replyTweet(id, tweetRequest);
         return ResponseEntity.ok(tweetResponse);
     }
 

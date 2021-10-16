@@ -7,10 +7,11 @@ import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.Unauthorize
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.Action;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
-import twitter4j.Status;
-import twitter4j.Twitter;
-import twitter4j.TwitterException;
+import twitter4j.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -183,5 +184,50 @@ public class TwitterClient {
             log.info("Tweet id is empty.");
         }
         return status;
+    }
+
+    public List<Status> replyTweet(String tweetId, String text) throws TwitterClientException {
+        Status status = null;
+        if (tweetId != null) {
+            try {
+                StatusUpdate statusUpdate = new StatusUpdate(text);
+                statusUpdate.setInReplyToStatusId(Long.parseLong(tweetId));
+                status = twitter.updateStatus(statusUpdate);
+                log.info("Showing reply to tweet:" + tweetId + " @" + status.getUser().getScreenName() + "'s tweet.");
+                log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
+            } catch (TwitterException te) {
+                log.info("Twitter [reply-to-tweet] throw exception: " + te.getMessage());
+                if (Objects.equals(te.getStatusCode(), 404)) {
+                    throw new TweetNotFoundException(tweetId);
+                }
+                throw new TwitterClientException();
+            }
+        } else {
+            log.info("Tweet id is empty.");
+        }
+        return status != null ? showReplies(status.getUser().getScreenName(), tweetId) : null;
+    }
+
+    private List<Status> showReplies(String username, String tweetId) throws TwitterClientException {
+        List<Status> replies = new ArrayList<>();
+
+        try {
+            Query query = new Query("to:" + username + " since_id:" + tweetId);
+            QueryResult results;
+
+            do {
+                results = twitter.search(query);
+                log.info("Results: " + results.getTweets().size());
+                List<Status> tweets = results.getTweets();
+
+                for (Status tweet : tweets)
+                    if (tweet.getInReplyToStatusId() == Long.parseLong(tweetId))
+                        replies.add(tweet);
+            } while ((query = results.nextQuery()) != null);
+
+        } catch (Exception e) {
+            throw new TwitterClientException();
+        }
+        return replies;
     }
 }

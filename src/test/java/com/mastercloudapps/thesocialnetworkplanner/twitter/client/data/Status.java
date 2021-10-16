@@ -8,6 +8,7 @@ import java.util.Date;
 public class Status implements twitter4j.Status {
     private boolean isRetweeted;
     private boolean isFavorited;
+    private long inReplyToStatusId;
 
     @Override
     public Date getCreatedAt() {
@@ -46,7 +47,7 @@ public class Status implements twitter4j.Status {
 
     @Override
     public long getInReplyToStatusId() {
-        return 0;
+        return this.inReplyToStatusId;
     }
 
     @Override
@@ -200,5 +201,9 @@ public class Status implements twitter4j.Status {
 
     public void setIsFavorited(boolean isFavorited) {
         this.isFavorited = isFavorited;
+    }
+
+    public void setInReplyToStatusId(long id) {
+        this.inReplyToStatusId = id;
     }
 }
