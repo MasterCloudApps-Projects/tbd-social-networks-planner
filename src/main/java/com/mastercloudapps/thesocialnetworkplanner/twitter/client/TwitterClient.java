@@ -4,6 +4,7 @@ import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TweetNotFou
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.RetweetForbiddenException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.UnauthorizedTwitterClientException;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.model.Action;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import twitter4j.Status;
@@ -99,7 +100,7 @@ public class TwitterClient {
                 if (Objects.equals(te.getStatusCode(), 404)) {
                     throw new TweetNotFoundException(tweetId);
                 } else if (Objects.equals(te.getStatusCode(), 403)) {
-                    throw new RetweetForbiddenException(true);
+                    throw new RetweetForbiddenException(true, Action.RETWEET);
                 }
                 throw new TwitterClientException();
             }
@@ -120,10 +121,10 @@ public class TwitterClient {
                     log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
                 } else {
                     log.info("This tweet is not retweet by @" + status.getUser().getScreenName());
-                    throw new RetweetForbiddenException(false);
+                    throw new RetweetForbiddenException(false, Action.RETWEET);
                 }
             } catch (TwitterException te) {
-                log.info("Twitter [retweet] throw exception: " + te.getMessage());
+                log.info("Twitter [undo-retweet] throw exception: " + te.getMessage());
                 if (Objects.equals(te.getStatusCode(), 404)) {
                     throw new TweetNotFoundException(tweetId);
                 }
@@ -135,4 +136,52 @@ public class TwitterClient {
         return status;
     }
 
+    public Status like(String tweetId) throws TwitterClientException {
+        Status status = null;
+        if (tweetId != null) {
+            try {
+                status = twitter.createFavorite(Long.parseLong(tweetId));
+
+                log.info("Showing liked @" + status.getUser().getScreenName() + "'s tweet.");
+                log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
+            } catch (TwitterException te) {
+                log.info("Twitter [create-favorite] throw exception: " + te.getMessage());
+                if (Objects.equals(te.getStatusCode(), 404)) {
+                    throw new TweetNotFoundException(tweetId);
+                } else if (Objects.equals(te.getStatusCode(), 403)) {
+                    throw new RetweetForbiddenException(true, Action.RETWEET);
+                }
+                throw new TwitterClientException();
+            }
+        } else {
+            log.info("Tweet id is empty.");
+        }
+        return status;
+    }
+
+    public Status undoLike(String tweetId) throws TwitterClientException {
+        Status status = null;
+        if (tweetId != null) {
+            try {
+                status = twitter.showStatus(Long.parseLong(tweetId));
+                if (status.isFavorited()) {
+                    status = twitter.destroyFavorite(Long.parseLong(tweetId));
+                    log.info("Showing liked @" + status.getUser().getScreenName() + "'s tweet.");
+                    log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
+                } else {
+                    log.info("This tweet is not favorited of @" + status.getUser().getScreenName());
+                    throw new RetweetForbiddenException(false, Action.LIKE);
+                }
+            } catch (TwitterException te) {
+                log.info("Twitter [undo-like] throw exception: " + te.getMessage());
+                if (Objects.equals(te.getStatusCode(), 404)) {
+                    throw new TweetNotFoundException(tweetId);
+                }
+                throw new TwitterClientException();
+            }
+        } else {
+            log.info("Tweet id is empty.");
+        }
+        return status;
+    }
 }

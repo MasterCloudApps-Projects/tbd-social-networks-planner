@@ -58,8 +58,29 @@ public class TwitterService {
             throw new TwitterBadRequestException();
         }
     }
+
     public TweetResponse undoRetweet(String tweetId) throws TwitterClientException {
         Status status = this.twitterClient.undoRetweet(tweetId);
+
+        if (status != null) {
+            return new TweetResponse(String.valueOf(status.getId()), status.getUser().getScreenName(), status.getText());
+        } else {
+            throw new TwitterBadRequestException();
+        }
+    }
+
+    public TweetResponse like(String tweetId) throws TwitterClientException {
+        Status status = this.twitterClient.like(tweetId);
+
+        if (status != null) {
+            return new TweetResponse(String.valueOf(status.getId()), status.getUser().getScreenName(), status.getText());
+        } else {
+            throw new TwitterBadRequestException();
+        }
+    }
+
+    public TweetResponse undoLike(String tweetId) throws TwitterClientException {
+        Status status = this.twitterClient.undoLike(tweetId);
 
         if (status != null) {
             return new TweetResponse(String.valueOf(status.getId()), status.getUser().getScreenName(), status.getText());
