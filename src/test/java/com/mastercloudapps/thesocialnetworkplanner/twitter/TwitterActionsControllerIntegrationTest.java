@@ -31,6 +31,7 @@ public class TwitterActionsControllerIntegrationTest {
     private static final String TWEET_ID = "tweetId";
     private static final String BASE_URL = "/twitter/actions";
     private static final String RETWEET = "/retweet";
+    private static final String LIKE = "/like";
 
     @Test
     public void retweet_shouldReturnTweetInformation() throws Exception {
@@ -75,6 +76,52 @@ public class TwitterActionsControllerIntegrationTest {
         when(this.twitterService.undoRetweet(any())).thenThrow(TwitterBadRequestException.class);
 
         mockMvc.perform(delete(BASE_URL + RETWEET + "/" + TWEET_ID))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+    }
+
+    @Test
+    public void like_shouldReturnTweetInformation() throws Exception {
+        when(this.twitterService.like(any())).thenReturn(TweetResponse.builder()
+                .id("id")
+                .username("andrea_juanma")
+                .text("This is a new tweet.")
+                .build());
+
+        mockMvc.perform(post(BASE_URL + LIKE + "/" + TWEET_ID))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andExpect(jsonPath("$.username").value("andrea_juanma"))
+                .andExpect(jsonPath("$.id").value("id"))
+                .andExpect(jsonPath("$.text").value("This is a new tweet."));
+    }
+
+    @Test
+    public void like_shouldThrowBadRequestException() throws Exception {
+        when(this.twitterService.like(any())).thenThrow(TwitterBadRequestException.class);
+
+        mockMvc.perform(post(BASE_URL + LIKE + "/" + TWEET_ID))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+    }
+
+    @Test
+    public void undoLike_shouldReturnTweetInformation() throws Exception {
+        when(this.twitterService.undoLike(any())).thenReturn(TweetResponse.builder()
+                .id("id")
+                .username("andrea_juanma")
+                .text("This is a new tweet.")
+                .build());
+
+        mockMvc.perform(delete(BASE_URL + LIKE + "/" + TWEET_ID))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andExpect(jsonPath("$.username").value("andrea_juanma"))
+                .andExpect(jsonPath("$.id").value("id"))
+                .andExpect(jsonPath("$.text").value("This is a new tweet."));
+    }
+
+    @Test
+    public void undoLike_shouldThrowBadRequestException() throws Exception {
+        when(this.twitterService.undoLike(any())).thenThrow(TwitterBadRequestException.class);
+
+        mockMvc.perform(delete(BASE_URL + LIKE + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 
