@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import twitter4j.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -192,7 +193,7 @@ public class TwitterClient {
                 StatusUpdate statusUpdate = new StatusUpdate(text);
                 statusUpdate.setInReplyToStatusId(Long.parseLong(tweetId));
                 status = twitter.updateStatus(statusUpdate);
-                log.info("Showing reply to tweet:"+ tweetId +  " @" + status.getUser().getScreenName() + "'s tweet.");
+                log.info("Showing reply to tweet:" + tweetId + " @" + status.getUser().getScreenName() + "'s tweet.");
                 log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
             } catch (TwitterException te) {
                 log.info("Twitter [reply-to-tweet] throw exception: " + te.getMessage());
@@ -204,7 +205,7 @@ public class TwitterClient {
         } else {
             log.info("Tweet id is empty.");
         }
-        return showReplies(status.getUser().getScreenName(), tweetId);
+        return status != null ? showReplies(status.getUser().getScreenName(), tweetId) : null;
     }
 
     private List<Status> showReplies(String username, String tweetId) throws TwitterClientException {
@@ -229,4 +230,4 @@ public class TwitterClient {
         }
         return replies;
     }
- }
+}

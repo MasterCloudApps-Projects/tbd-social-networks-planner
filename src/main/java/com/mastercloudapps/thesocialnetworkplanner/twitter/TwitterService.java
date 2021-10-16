@@ -96,8 +96,12 @@ public class TwitterService {
     public TweetRepliesResponse replyTweet(String tweetId, TweetRequest tweetRequest) throws TwitterClientException {
         List<Status> statuses = this.twitterClient.replyTweet(tweetId, tweetRequest.getText());
         List<TweetResponse> replies = new ArrayList<>();
-        for (Status status : statuses) {
-            replies.add(new TweetResponse(String.valueOf(status.getId()), status.getUser().getScreenName(), status.getText()));
+        if (statuses != null) {
+            for (Status status : statuses) {
+                replies.add(new TweetResponse(String.valueOf(status.getId()), status.getUser().getScreenName(), status.getText()));
+            }
+        } else {
+            throw new TwitterBadRequestException();
         }
         return new TweetRepliesResponse(tweetId, replies);
     }
