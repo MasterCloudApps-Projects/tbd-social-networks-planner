@@ -27,22 +27,25 @@ public class TwitterClientTest {
 
     @Mock
     private Twitter twitter;
+    
+    private Status status;
 
     @Before
     public void beforeEach() {
         this.twitterClient = new TwitterClient(this.twitter);
+        this.status = new Status();
     }
 
     @Test
     public void getTweet_shouldReturnTweetInformation() throws TwitterClientException, TwitterException {
-        Mockito.when(twitter.showStatus(anyLong())).thenReturn(new Status());
+        Mockito.when(twitter.showStatus(anyLong())).thenReturn(this.status);
         twitter4j.Status response = this.twitterClient.getTweet(TWEET_ID_STRING);
         Assertions.assertThat(response).isNotNull();
     }
 
     @Test
     public void getTweet_shouldReturnNull() throws TwitterClientException, TwitterException {
-        Mockito.when(twitter.showStatus(anyLong())).thenReturn(new Status());
+        Mockito.when(twitter.showStatus(anyLong())).thenReturn(this.status);
         twitter4j.Status response = this.twitterClient.getTweet(null);
         Assertions.assertThat(response).isNull();
     }
@@ -61,14 +64,14 @@ public class TwitterClientTest {
 
     @Test
     public void postTweet_shouldReturnTweetInformation() throws TwitterClientException, TwitterException {
-        Mockito.when(twitter.updateStatus(anyString())).thenReturn(new Status());
+        Mockito.when(twitter.updateStatus(anyString())).thenReturn(this.status);
         twitter4j.Status response = this.twitterClient.postTweet(TWEET_ID_STRING);
         Assertions.assertThat(response).isNotNull();
     }
 
     @Test
     public void postTweet_shouldReturnNull() throws TwitterClientException, TwitterException {
-        Mockito.when(twitter.updateStatus(anyString())).thenReturn(new Status());
+        Mockito.when(twitter.updateStatus(anyString())).thenReturn(this.status);
         twitter4j.Status response = this.twitterClient.postTweet(null);
         Assertions.assertThat(response).isNull();
     }
@@ -87,14 +90,14 @@ public class TwitterClientTest {
 
     @Test
     public void deleteTweet_shouldReturnTweetInformation() throws TwitterClientException, TwitterException {
-        Mockito.when(twitter.destroyStatus(anyLong())).thenReturn(new Status());
+        Mockito.when(twitter.destroyStatus(anyLong())).thenReturn(this.status);
         twitter4j.Status response = this.twitterClient.deleteTweet(TWEET_ID_STRING);
         Assertions.assertThat(response).isNotNull();
     }
 
     @Test
     public void deleteTweet_shouldReturnNull() throws TwitterClientException, TwitterException {
-        Mockito.when(twitter.destroyStatus(anyLong())).thenReturn(new Status());
+        Mockito.when(twitter.destroyStatus(anyLong())).thenReturn(this.status);
         twitter4j.Status response = this.twitterClient.deleteTweet(null);
         Assertions.assertThat(response).isNull();
     }
@@ -113,14 +116,14 @@ public class TwitterClientTest {
 
     @Test
     public void retweet_shouldReturnTweetInformation() throws TwitterClientException, TwitterException {
-        Mockito.when(twitter.retweetStatus(anyLong())).thenReturn(new Status());
+        Mockito.when(twitter.retweetStatus(anyLong())).thenReturn(this.status);
         twitter4j.Status response = this.twitterClient.retweet(TWEET_ID_STRING);
         Assertions.assertThat(response).isNotNull();
     }
 
     @Test
     public void retweet_shouldReturnTweetInformationNull() throws TwitterClientException, TwitterException {
-        Mockito.when(twitter.retweetStatus(anyLong())).thenReturn(new Status());
+        Mockito.when(twitter.retweetStatus(anyLong())).thenReturn(this.status);
         twitter4j.Status response = this.twitterClient.retweet(null);
         Assertions.assertThat(response).isNull();
     }
@@ -145,8 +148,7 @@ public class TwitterClientTest {
 
     @Test
     public void undoRetweet_shouldReturnTweetInformation_whenTweetIsAlreadyRetweeted() throws TwitterClientException, TwitterException {
-        Status status = new Status();
-        status.setIsRetweeted(true);
+        this.status.setIsRetweeted(true);
         Mockito.when(twitter.showStatus(anyLong())).thenReturn(status);
         Mockito.when(twitter.unRetweetStatus(anyLong())).thenReturn(status);
         twitter4j.Status response = this.twitterClient.undoRetweet(TWEET_ID_STRING);
@@ -155,15 +157,14 @@ public class TwitterClientTest {
 
     @Test(expected = RetweetForbiddenException.class)
     public void undoRetweet_shouldThrowRetweetForbiddenException_whenTweetIsNotRetweeted() throws TwitterClientException, TwitterException {
-        Status status = new Status();
-        status.setIsRetweeted(false);
+        this.status.setIsRetweeted(false);
         Mockito.when(twitter.showStatus(anyLong())).thenReturn(status);
         this.twitterClient.undoRetweet(TWEET_ID_STRING);
     }
 
     @Test
     public void undoRetweet_shouldReturnTweetInformationNull() throws TwitterClientException, TwitterException {
-        Mockito.when(twitter.showStatus(anyLong())).thenReturn(new Status());
+        Mockito.when(twitter.showStatus(anyLong())).thenReturn(this.status);
         twitter4j.Status response = this.twitterClient.undoRetweet(null);
         Assertions.assertThat(response).isNull();
     }
@@ -183,8 +184,7 @@ public class TwitterClientTest {
 
     @Test(expected = TweetNotFoundException.class)
     public void undoRetweet_shouldThrowTweetNotFoundException_whenCalledUnRetweet() throws TwitterClientException, TwitterException {
-        Status status = new Status();
-        status.setIsRetweeted(true);
+        this.status.setIsRetweeted(true);
         Mockito.when(twitter.showStatus(anyLong())).thenReturn(status);
         Mockito.when(twitter.unRetweetStatus(anyLong())).thenThrow(new TwitterException("message", null, 404) );
         this.twitterClient.undoRetweet(TWEET_ID_STRING);
@@ -192,10 +192,94 @@ public class TwitterClientTest {
 
     @Test(expected = TwitterClientException.class)
     public void undoRetweet_shouldThrowTwitterClientException_whenCalledUnRetweet() throws TwitterClientException, TwitterException {
-        Status status = new Status();
-        status.setIsRetweeted(true);
+        this.status.setIsRetweeted(true);
         Mockito.when(twitter.showStatus(anyLong())).thenReturn(status);
         Mockito.when(twitter.unRetweetStatus(anyLong())).thenThrow(new TwitterException("message", null, 401) );
         this.twitterClient.undoRetweet(TWEET_ID_STRING);
     }
+
+    @Test
+    public void like_shouldReturnTweetInformation() throws TwitterClientException, TwitterException {
+        Mockito.when(twitter.createFavorite(anyLong())).thenReturn(this.status);
+        twitter4j.Status response = this.twitterClient.like(TWEET_ID_STRING);
+        Assertions.assertThat(response).isNotNull();
+    }
+
+    @Test
+    public void like_shouldReturnTweetInformationNull() throws TwitterClientException, TwitterException {
+        Mockito.when(twitter.createFavorite(anyLong())).thenReturn(this.status);
+        twitter4j.Status response = this.twitterClient.like(null);
+        Assertions.assertThat(response).isNull();
+    }
+
+    @Test(expected = TweetNotFoundException.class)
+    public void like_shouldThrowTweetNotFoundException() throws TwitterClientException, TwitterException {
+        Mockito.when(twitter.createFavorite(anyLong())).thenThrow(new TwitterException("message", null, 404) );
+        this.twitterClient.like(TWEET_ID_STRING);
+    }
+
+    @Test(expected = RetweetForbiddenException.class)
+    public void like_shouldThrowRetweetForbiddenException() throws TwitterClientException, TwitterException {
+        Mockito.when(twitter.createFavorite(anyLong())).thenThrow(new TwitterException("message", null, 403) );
+        this.twitterClient.like(TWEET_ID_STRING);
+    }
+
+    @Test(expected = TwitterClientException.class)
+    public void like_shouldThrowTwitterClientException() throws TwitterClientException, TwitterException {
+        Mockito.when(twitter.createFavorite(anyLong())).thenThrow(new TwitterException("message", null, 401) );
+        this.twitterClient.like(TWEET_ID_STRING);
+    }
+
+    @Test
+    public void undoLike_shouldReturnTweetInformation_whenTweetIsAlreadyLiked() throws TwitterClientException, TwitterException {
+        this.status.setIsFavorited(true);
+        Mockito.when(twitter.showStatus(anyLong())).thenReturn(status);
+        Mockito.when(twitter.destroyFavorite(anyLong())).thenReturn(status);
+        twitter4j.Status response = this.twitterClient.undoLike(TWEET_ID_STRING);
+        Assertions.assertThat(response).isNotNull();
+    }
+
+    @Test(expected = RetweetForbiddenException.class)
+    public void undoLike_shouldThrowRetweetForbiddenException_whenTweetIsNotLiked() throws TwitterClientException, TwitterException {
+        this.status.setIsFavorited(false);
+        Mockito.when(twitter.showStatus(anyLong())).thenReturn(status);
+        this.twitterClient.undoLike(TWEET_ID_STRING);
+    }
+
+    @Test
+    public void undoLike_shouldReturnTweetInformationNull() throws TwitterClientException, TwitterException {
+        Mockito.when(twitter.showStatus(anyLong())).thenReturn(this.status);
+        twitter4j.Status response = this.twitterClient.undoLike(null);
+        Assertions.assertThat(response).isNull();
+    }
+
+    @Test(expected = TweetNotFoundException.class)
+    public void undoLike_shouldThrowTweetNotFoundException_whenCalledShowStatus() throws TwitterClientException, TwitterException {
+        Mockito.when(twitter.showStatus(anyLong())).thenThrow(new TwitterException("message", null, 404) );
+        this.twitterClient.undoRetweet(TWEET_ID_STRING);
+    }
+
+
+    @Test(expected = TwitterClientException.class)
+    public void undoLike_shouldThrowTwitterClientException_whenCalledShowStatus() throws TwitterClientException, TwitterException {
+        Mockito.when(twitter.showStatus(anyLong())).thenThrow(new TwitterException("message", null, 401) );
+        this.twitterClient.undoLike(TWEET_ID_STRING);
+    }
+
+    @Test(expected = TweetNotFoundException.class)
+    public void undoLike_shouldThrowTweetNotFoundException_whenCalledDestroyLike() throws TwitterClientException, TwitterException {
+        this.status.setIsFavorited(true);
+        Mockito.when(twitter.showStatus(anyLong())).thenReturn(status);
+        Mockito.when(twitter.destroyFavorite(anyLong())).thenThrow(new TwitterException("message", null, 404) );
+        this.twitterClient.undoLike(TWEET_ID_STRING);
+    }
+
+    @Test(expected = TwitterClientException.class)
+    public void undoLike_shouldThrowTwitterClientException_whenCalledDestroyLike() throws TwitterClientException, TwitterException {
+        this.status.setIsFavorited(true);
+        Mockito.when(twitter.showStatus(anyLong())).thenReturn(status);
+        Mockito.when(twitter.destroyFavorite(anyLong())).thenThrow(new TwitterException("message", null, 401) );
+        this.twitterClient.undoLike(TWEET_ID_STRING);
+    }
+    
 }
