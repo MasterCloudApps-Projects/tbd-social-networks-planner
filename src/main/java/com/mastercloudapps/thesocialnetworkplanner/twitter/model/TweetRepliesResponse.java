@@ -10,10 +10,10 @@ import java.util.List;
 @Data
 public class TweetRepliesResponse {
 
-    @JsonProperty("tweetId")
+    @JsonProperty("tweet_id")
     private String tweetId;
 
-    @JsonProperty("replies")
+    @JsonProperty("user_replies")
     private List<TweetResponse> replies;
 
 }
