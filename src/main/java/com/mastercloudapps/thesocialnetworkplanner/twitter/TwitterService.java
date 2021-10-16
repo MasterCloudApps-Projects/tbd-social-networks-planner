@@ -3,11 +3,15 @@ package com.mastercloudapps.thesocialnetworkplanner.twitter;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.client.TwitterClient;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRepliesResponse;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRequest;
 import lombok.Data;
 import org.springframework.stereotype.Service;
 import twitter4j.Status;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Service
@@ -87,6 +91,15 @@ public class TwitterService {
         } else {
             throw new TwitterBadRequestException();
         }
+    }
+
+    public TweetRepliesResponse replyTweet(String tweetId, TweetRequest tweetRequest) throws TwitterClientException {
+        List<Status> statuses = this.twitterClient.replyTweet(tweetId, tweetRequest.getText());
+        List<TweetResponse> replies = new ArrayList<>();
+        for (Status status : statuses) {
+            replies.add(new TweetResponse(String.valueOf(status.getId()), status.getUser().getScreenName(), status.getText()));
+        }
+        return new TweetRepliesResponse(tweetId, replies);
     }
 
 }
