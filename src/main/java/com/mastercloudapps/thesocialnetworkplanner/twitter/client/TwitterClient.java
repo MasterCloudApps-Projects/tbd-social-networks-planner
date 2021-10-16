@@ -2,6 +2,7 @@ package com.mastercloudapps.thesocialnetworkplanner.twitter.client;
 
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TweetNotFoundException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.RetweetForbiddenException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.UnauthorizedTwitterClientException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ public class TwitterClient {
             } catch (TwitterException te) {
                 log.info("Twitter [get-tweet] throw exception: " + te.getMessage());
                 if (Objects.equals(te.getStatusCode(), 404)) {
-                    throw new TweetNotFoundException();
+                    throw new TweetNotFoundException(tweetId);
                 }
                 throw new TwitterClientException();
             }
@@ -73,7 +74,7 @@ public class TwitterClient {
             } catch (TwitterException te) {
                 log.info("Twitter [delete-tweet] throw exception: " + te.getMessage());
                 if (Objects.equals(te.getStatusCode(), 404)) {
-                    throw new TweetNotFoundException();
+                    throw new TweetNotFoundException(tweetId);
                 }
                 throw new TwitterClientException();
             }
@@ -82,6 +83,55 @@ public class TwitterClient {
             return null;
         }
 
+        return status;
+    }
+
+    public Status retweet(String tweetId) throws TwitterClientException {
+        Status status = null;
+        if (tweetId != null) {
+            try {
+                status = twitter.retweetStatus(Long.parseLong(tweetId));
+
+                log.info("Showing retweeted @" + status.getUser().getScreenName() + "'s tweet.");
+                log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
+            } catch (TwitterException te) {
+                log.info("Twitter [retweet] throw exception: " + te.getMessage());
+                if (Objects.equals(te.getStatusCode(), 404)) {
+                    throw new TweetNotFoundException(tweetId);
+                } else if (Objects.equals(te.getStatusCode(), 403)) {
+                    throw new RetweetForbiddenException(true);
+                }
+                throw new TwitterClientException();
+            }
+        } else {
+            log.info("Tweet id is empty.");
+        }
+        return status;
+    }
+
+    public Status undoRetweet(String tweetId) throws TwitterClientException {
+        Status status = null;
+        if (tweetId != null) {
+            try {
+                status = twitter.showStatus(Long.parseLong(tweetId));
+                if (status.isRetweeted()) {
+                    status = twitter.unRetweetStatus(Long.parseLong(tweetId));
+                    log.info("Showing retweeted @" + status.getUser().getScreenName() + "'s tweet.");
+                    log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
+                } else {
+                    log.info("This tweet is not retweet by @" + status.getUser().getScreenName());
+                    throw new RetweetForbiddenException(false);
+                }
+            } catch (TwitterException te) {
+                log.info("Twitter [retweet] throw exception: " + te.getMessage());
+                if (Objects.equals(te.getStatusCode(), 404)) {
+                    throw new TweetNotFoundException(tweetId);
+                }
+                throw new TwitterClientException();
+            }
+        } else {
+            log.info("Tweet id is empty.");
+        }
         return status;
     }
 
