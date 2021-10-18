@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -58,13 +59,16 @@ public class TweetControllerIntegrationTest {
     @Test
     public void postTweet_shouldReturnTweetInformation() throws Exception {
         String jsonRequest = "{ \"text\" : \"This is a new tweet\" }";
-        when(this.twitterService.postTweet(any())).thenReturn(TweetResponse.builder()
+        MockMultipartFile multipartFile = new MockMultipartFile ("file", "image.jpeg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "Image for tweet".getBytes());
+        when(this.twitterService.postTweet(any(), any())).thenReturn(TweetResponse.builder()
                 .id("id")
                 .username("andrea_juanma")
                 .text("This is a new tweet.")
                 .build());
 
-        mockMvc.perform(post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content(jsonRequest))
+        mockMvc.perform(multipart(BASE_URL).file(multipartFile).contentType(MediaType.APPLICATION_JSON).content(jsonRequest))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
                 .andExpect(jsonPath("$.id").value("id"))
@@ -74,9 +78,12 @@ public class TweetControllerIntegrationTest {
     @Test
     public void postTweet_shouldThrowTwitterBadRequestException() throws Exception {
         String jsonRequest = "{ \"text\" : \"This is a new tweet\" }";
-        when(this.twitterService.postTweet(any())).thenThrow(TwitterBadRequestException.class);
+        MockMultipartFile multipartFile = new MockMultipartFile ("file", "image.jpeg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "Image for tweet".getBytes());
+        when(this.twitterService.postTweet(any(),any())).thenThrow(TwitterBadRequestException.class);
 
-        mockMvc.perform(post(BASE_URL).contentType(MediaType.APPLICATION_JSON).content(jsonRequest))
+        mockMvc.perform(multipart(BASE_URL).file(multipartFile).contentType(MediaType.APPLICATION_JSON).content(jsonRequest))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 

@@ -7,9 +7,13 @@ import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.Unauthorize
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @Validated
@@ -28,9 +32,10 @@ public class TweetController {
     }
 
     @PostMapping()
-    public ResponseEntity<TweetResponse> postTweet(@RequestBody TweetRequest tweetRequest) throws
-            TwitterClientException {
-        TweetResponse tweetResponse = this.twitterService.postTweet(tweetRequest);
+    public ResponseEntity<TweetResponse> postTweet(@RequestBody TweetRequest tweetRequest, @RequestParam(value = "image",
+            required = false) MultipartFile multipartFile) throws
+            TwitterClientException, IOException {
+        TweetResponse tweetResponse = this.twitterService.postTweet(tweetRequest, multipartFile);
         return ResponseEntity.ok(tweetResponse);
     }
 

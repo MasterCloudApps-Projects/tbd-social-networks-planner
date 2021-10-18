@@ -1,16 +1,17 @@
 package com.mastercloudapps.thesocialnetworkplanner.twitter.client;
 
+import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.RetweetForbiddenException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TweetNotFoundException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
-import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.RetweetForbiddenException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.UnauthorizedTwitterClientException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.Action;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import twitter4j.*;
 
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -44,11 +45,25 @@ public class TwitterClient {
         }
     }
 
-    public Status postTweet(String text) throws TwitterClientException {
+    public Status postTweet(String text, File image) throws TwitterClientException {
         Status status;
         if (text != null) {
             try {
-                status = twitter.updateStatus(text);
+                if (image != null) {
+                    long[] mediaIds = new long[1];
+                    UploadedMedia media = twitter.uploadMedia(image);
+                    mediaIds[0] = media.getMediaId();
+
+                    StatusUpdate statusUpdate = new StatusUpdate(text);
+                    statusUpdate.setMediaIds(mediaIds);
+                    status = twitter.updateStatus(statusUpdate);
+                    File file = new File("src/main/resources/image_to_upload.jpeg");
+                    if (file.exists()) {
+                        file.delete();
+                    }
+                } else {
+                    status = twitter.updateStatus(text);
+                }
                 log.info("Showing recently posted @" + status.getUser().getScreenName() + "'s tweet.");
                 log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
                 return status;
