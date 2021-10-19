@@ -74,27 +74,27 @@ public class TwitterClientTest {
     @Test
     public void postTweet_shouldReturnTweetInformation() throws TwitterClientException, TwitterException {
         Mockito.when(twitter.updateStatus(anyString())).thenReturn(this.status);
-        twitter4j.Status response = this.twitterClient.postTweet(TWEET_ID_STRING);
+        twitter4j.Status response = this.twitterClient.postTweet(TWEET_ID_STRING, null);
         Assertions.assertThat(response).isNotNull();
     }
 
     @Test
     public void postTweet_shouldReturnNull() throws TwitterClientException, TwitterException {
         Mockito.when(twitter.updateStatus(anyString())).thenReturn(this.status);
-        twitter4j.Status response = this.twitterClient.postTweet(null);
+        twitter4j.Status response = this.twitterClient.postTweet(null, null);
         Assertions.assertThat(response).isNull();
     }
 
     @Test(expected = UnauthorizedTwitterClientException.class)
     public void postTweet_shouldThrowUnauthorizedTwitterClientException() throws TwitterClientException, TwitterException {
         Mockito.when(twitter.updateStatus(anyString())).thenThrow(new TwitterException("message", null, 401));
-        this.twitterClient.postTweet(TWEET_ID_STRING);
+        this.twitterClient.postTweet(TWEET_ID_STRING, null);
     }
 
     @Test(expected = TwitterClientException.class)
     public void postTweet_shouldThrowTwitterClientException() throws TwitterClientException, TwitterException {
         Mockito.when(twitter.updateStatus(anyString())).thenThrow(new TwitterException("message", null, 400));
-        this.twitterClient.postTweet("This is a tweet.");
+        this.twitterClient.postTweet("This is a tweet.", null);
     }
 
     @Test

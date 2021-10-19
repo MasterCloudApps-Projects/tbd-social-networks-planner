@@ -8,10 +8,16 @@ import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRequest;
 import lombok.Data;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import twitter4j.Status;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @Service
@@ -33,8 +39,8 @@ public class TwitterService {
         }
     }
 
-    public TweetResponse postTweet(TweetRequest tweetRequest) throws TwitterClientException {
-        Status status = this.twitterClient.postTweet(tweetRequest.getText());
+    public TweetResponse postTweet(TweetRequest tweetRequest, MultipartFile imageFile) throws TwitterClientException, IOException {
+        Status status = this.twitterClient.postTweet(tweetRequest.getText(), createFile(imageFile));
 
         if (status != null) {
             return new TweetResponse(String.valueOf(status.getId()), status.getUser().getScreenName(), status.getText());
@@ -104,6 +110,17 @@ public class TwitterService {
             throw new TwitterBadRequestException();
         }
         return new TweetRepliesResponse(tweetId, replies);
+    }
+
+    private File createFile(MultipartFile multipartFile) throws IOException {
+        if (multipartFile != null) {
+            File file = new File("src/main/resources/image_to_upload.jpeg");
+            try (OutputStream os = new FileOutputStream(file)) {
+                os.write(multipartFile.getBytes());
+            }
+            return file;
+        }
+        return null;
     }
 
 }

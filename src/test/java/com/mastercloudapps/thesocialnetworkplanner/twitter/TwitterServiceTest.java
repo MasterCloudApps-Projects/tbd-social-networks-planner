@@ -13,11 +13,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -56,9 +58,9 @@ public class TwitterServiceTest {
     }
 
     @Test
-    public void postTweet_shouldReturnTweetInformation() throws TwitterClientException {
-        when(this.twitterClient.postTweet(anyString())).thenReturn(new Status());
-        TweetResponse tweetResponse = this.twitterService.postTweet(tweetRequest());
+    public void postTweet_shouldReturnTweetInformation() throws TwitterClientException, IOException {
+        when(this.twitterClient.postTweet(anyString(), any())).thenReturn(new Status());
+        TweetResponse tweetResponse = this.twitterService.postTweet(tweetRequest(), null);
 
         assertEquals(tweetResponse.getUsername(), "andrea_juanma");
         assertEquals(tweetResponse.getText(), "This is a new tweet.");
@@ -66,9 +68,9 @@ public class TwitterServiceTest {
     }
 
     @Test(expected = TwitterBadRequestException.class)
-    public void postTweet_shouldThrowTwitterBadRequestException() throws TwitterClientException {
-        when(this.twitterClient.postTweet(anyString())).thenReturn(null);
-        TweetResponse tweetResponse = this.twitterService.postTweet(tweetRequest());
+    public void postTweet_shouldThrowTwitterBadRequestException() throws TwitterClientException, IOException {
+        when(this.twitterClient.postTweet(anyString(), any())).thenReturn(null);
+        TweetResponse tweetResponse = this.twitterService.postTweet(tweetRequest(), null);
 
         assertNull(tweetResponse);
     }
