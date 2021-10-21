@@ -1,5 +1,6 @@
 package com.mastercloudapps.thesocialnetworkplanner.twitter.client;
 
+import com.mastercloudapps.thesocialnetworkplanner.twitter.configuration.TwitterSession;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.RetweetForbiddenException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TweetNotFoundException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
@@ -7,7 +8,6 @@ import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.Unauthorize
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.Action;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import twitter4j.*;
 
 import java.io.File;
@@ -18,17 +18,17 @@ import java.util.Objects;
 @Service
 @Log4j2
 public class TwitterClient {
-    private final Twitter twitter;
+    private final TwitterSession twitterSession;
 
-    public TwitterClient(Twitter twitter) {
-        this.twitter = twitter;
+    public TwitterClient(TwitterSession twitterSession) {
+        this.twitterSession = twitterSession;
     }
 
     public Status getTweet(String tweetId) throws TwitterClientException {
         Status status;
         if (tweetId != null) {
             try {
-                status = twitter.showStatus(Long.parseLong(tweetId));
+                status = twitterSession.showStatus(Long.parseLong(tweetId));
                 log.info("Showing @" + status.getUser().getScreenName() + "'s tweet.");
                 log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
                 return status;
@@ -51,18 +51,18 @@ public class TwitterClient {
             try {
                 if (image != null) {
                     long[] mediaIds = new long[1];
-                    UploadedMedia media = twitter.uploadMedia(image);
+                    UploadedMedia media = twitterSession.uploadMedia(image);
                     mediaIds[0] = media.getMediaId();
 
                     StatusUpdate statusUpdate = new StatusUpdate(text);
                     statusUpdate.setMediaIds(mediaIds);
-                    status = twitter.updateStatus(statusUpdate);
+                    status = twitterSession.updateStatus(statusUpdate);
                     File file = new File("src/main/resources/image_to_upload.jpeg");
                     if (file.exists()) {
                         file.delete();
                     }
                 } else {
-                    status = twitter.updateStatus(text);
+                    status = twitterSession.updateStatus(text);
                 }
                 log.info("Showing recently posted @" + status.getUser().getScreenName() + "'s tweet.");
                 log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
@@ -85,7 +85,7 @@ public class TwitterClient {
         Status status;
         if (tweetId != null) {
             try {
-                status = twitter.destroyStatus(Long.parseLong(tweetId));
+                status = twitterSession.destroyStatus(Long.parseLong(tweetId));
                 log.info("Showing @" + status.getUser().getScreenName() + "'s tweet.");
                 log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
             } catch (TwitterException te) {
@@ -107,7 +107,7 @@ public class TwitterClient {
         Status status = null;
         if (tweetId != null) {
             try {
-                status = twitter.retweetStatus(Long.parseLong(tweetId));
+                status = twitterSession.retweetStatus(Long.parseLong(tweetId));
 
                 log.info("Showing retweeted @" + status.getUser().getScreenName() + "'s tweet.");
                 log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
@@ -130,9 +130,9 @@ public class TwitterClient {
         Status status = null;
         if (tweetId != null) {
             try {
-                status = twitter.showStatus(Long.parseLong(tweetId));
+                status = twitterSession.showStatus(Long.parseLong(tweetId));
                 if (status.isRetweeted()) {
-                    status = twitter.unRetweetStatus(Long.parseLong(tweetId));
+                    status = twitterSession.unRetweetStatus(Long.parseLong(tweetId));
                     log.info("Showing retweeted @" + status.getUser().getScreenName() + "'s tweet.");
                     log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
                 } else {
@@ -156,7 +156,7 @@ public class TwitterClient {
         Status status = null;
         if (tweetId != null) {
             try {
-                status = twitter.createFavorite(Long.parseLong(tweetId));
+                status = twitterSession.createFavorite(Long.parseLong(tweetId));
 
                 log.info("Showing liked @" + status.getUser().getScreenName() + "'s tweet.");
                 log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
@@ -179,9 +179,9 @@ public class TwitterClient {
         Status status = null;
         if (tweetId != null) {
             try {
-                status = twitter.showStatus(Long.parseLong(tweetId));
+                status = twitterSession.showStatus(Long.parseLong(tweetId));
                 if (status.isFavorited()) {
-                    status = twitter.destroyFavorite(Long.parseLong(tweetId));
+                    status = twitterSession.destroyFavorite(Long.parseLong(tweetId));
                     log.info("Showing liked @" + status.getUser().getScreenName() + "'s tweet.");
                     log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
                 } else {
@@ -207,7 +207,7 @@ public class TwitterClient {
             try {
                 StatusUpdate statusUpdate = new StatusUpdate(text);
                 statusUpdate.setInReplyToStatusId(Long.parseLong(tweetId));
-                status = twitter.updateStatus(statusUpdate);
+                status = twitterSession.updateStatus(statusUpdate);
                 log.info("Showing reply to tweet:" + tweetId + " @" + status.getUser().getScreenName() + "'s tweet.");
                 log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
             } catch (TwitterException te) {
@@ -231,7 +231,7 @@ public class TwitterClient {
             QueryResult results;
 
             do {
-                results = twitter.search(query);
+                results = twitterSession.search(query);
                 log.info("Results: " + results.getTweets().size());
                 List<Status> tweets = results.getTweets();
 
@@ -245,4 +245,5 @@ public class TwitterClient {
         }
         return replies;
     }
+
 }

@@ -4,10 +4,9 @@ import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TweetNotFou
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.UnauthorizedTwitterClientException;
-import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRequest;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
