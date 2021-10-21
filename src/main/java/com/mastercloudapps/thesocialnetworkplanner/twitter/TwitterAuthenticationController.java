@@ -19,7 +19,7 @@ public class TwitterAuthenticationController {
         this.twitterAuthenticationService = twitterAuthenticationService;
     }
 
-    @GetMapping("/")
+    @GetMapping()
     public ResponseEntity<RequestTokenResponse> getAuthUrl() throws TwitterClientException {
         String url = this.twitterAuthenticationService.getRequestTokenUrl();
         return ResponseEntity.ok(new RequestTokenResponse(url));

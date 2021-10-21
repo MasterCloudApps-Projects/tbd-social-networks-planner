@@ -18,14 +18,15 @@ public class TwitterSession {
 
     public static TwitterSession getInstance() {
         if (twitterSession == null) {
-            twitterSession = new TwitterSession();
-            twitter = new TwitterFactory().getInstance();
+            twitterSession = new TwitterSession(new TwitterFactory().getInstance());
         }
         return twitterSession;
     }
 
-    public void setTwitter(Twitter newTwitter) {
-        twitter = newTwitter;
+    private TwitterSession() {}
+
+    private TwitterSession(Twitter twitter4j) {
+        twitter = twitter4j;
     }
 
     public void resetTwitter() {

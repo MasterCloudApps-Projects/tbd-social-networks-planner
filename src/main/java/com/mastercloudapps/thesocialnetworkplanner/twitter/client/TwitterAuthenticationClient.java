@@ -4,7 +4,6 @@ import com.mastercloudapps.thesocialnetworkplanner.twitter.configuration.Twitter
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import twitter4j.TwitterException;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
@@ -15,11 +14,9 @@ public class TwitterAuthenticationClient {
 
     private RequestToken requestToken;
     private final TwitterSession twitterSession;
-    private final RestTemplate restTemplate;
 
-    public TwitterAuthenticationClient(TwitterSession twitterSession, RestTemplate restTemplate) {
+    public TwitterAuthenticationClient(TwitterSession twitterSession) {
         this.twitterSession = twitterSession;
-        this.restTemplate = restTemplate;
     }
 
     public String requestToken() throws TwitterClientException {
@@ -27,10 +24,10 @@ public class TwitterAuthenticationClient {
         twitterSession.setOAuthConsumer();
         try {
             requestToken = twitterSession.getOAuthRequestToken();
+            log.info("Got request token.");
         } catch (TwitterException ex) {
             throw new TwitterClientException();
         }
-        log.info("Got request token.");
         return requestToken.getAuthenticationURL();
     }
 
