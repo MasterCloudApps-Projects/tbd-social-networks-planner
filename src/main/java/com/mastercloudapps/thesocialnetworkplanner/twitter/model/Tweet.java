@@ -1,12 +1,13 @@
 package com.mastercloudapps.thesocialnetworkplanner.twitter.model;
 
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.util.Date;
+
 
 @Entity
 @Data
@@ -21,4 +22,8 @@ public class Tweet {
     private String username;
     private Date creationDate;
     private Date updateDate;
+
+    public TweetResponse toTweetResponse() {
+        return new TweetResponse(id, username, text);
+    }
 }

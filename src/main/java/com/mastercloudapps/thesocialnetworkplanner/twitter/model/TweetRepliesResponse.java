@@ -13,7 +13,7 @@ import java.util.List;
 public class TweetRepliesResponse {
 
     @JsonProperty("tweet_id")
-    private String tweetId;
+    private Long tweetId;
 
     @JsonProperty("user_replies")
     private List<TweetResponse> replies;
