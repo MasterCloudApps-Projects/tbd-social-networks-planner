@@ -1,4 +1,4 @@
-package com.mastercloudapps.thesocialnetworkplanner.twitter;
+package com.mastercloudapps.thesocialnetworkplanner.twitter.controller;
 
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.RetweetForbiddenException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
@@ -6,6 +6,7 @@ import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClie
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRepliesResponse;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRequest;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.service.TwitterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;

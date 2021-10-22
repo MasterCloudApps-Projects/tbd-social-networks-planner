@@ -1,7 +1,8 @@
-package com.mastercloudapps.thesocialnetworkplanner.twitter;
+package com.mastercloudapps.thesocialnetworkplanner.twitter.controller;
 
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.service.TwitterService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.Arrays;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 
@@ -37,6 +42,7 @@ public class TweetControllerIntegrationTest {
     private TwitterService twitterService;
     private static final Long TWEET_ID = 1L;
     private static final String BASE_URL = "/twitter/tweets";
+    private static final String UNPUBLISHED_URL = "unpublished";
 
     @Test
     public void getAllTweets_shouldReturnTweetInformation() throws Exception {
@@ -128,6 +134,22 @@ public class TweetControllerIntegrationTest {
 
         mockMvc.perform(delete(BASE_URL + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+    }
+
+    @Test
+    public void getUnpublishedTweets_shouldReturnTweetInformation() throws Exception {
+        when(this.twitterService.getUnpublishedTweets()).thenReturn(
+                Arrays.asList(
+                        TweetResponse.builder().id(TWEET_ID).username("andrea_juanma").text("This is a new tweet.").build(),
+                        TweetResponse.builder().id(2L).username("jguijars").text("This is an old tweet.").build()));
+
+        mockMvc.perform(get(BASE_URL + "/" + UNPUBLISHED_URL))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andExpect(jsonPath("$[0].username").value("andrea_juanma"))
+                .andExpect(jsonPath("$[0].id").value(TWEET_ID))
+                .andExpect(jsonPath("$[0].text").value("This is a new tweet."))
+                .andExpect(jsonPath("$[0].twitterId", is(nullValue())))
+                .andExpect(jsonPath("$", hasSize(2)));
     }
 
 }

@@ -1,4 +1,4 @@
-package com.mastercloudapps.thesocialnetworkplanner.twitter;
+package com.mastercloudapps.thesocialnetworkplanner.twitter.service;
 
 import com.mastercloudapps.thesocialnetworkplanner.twitter.client.TwitterAuthenticationClient;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
