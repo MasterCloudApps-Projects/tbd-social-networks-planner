@@ -15,6 +15,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.util.Arrays;
+
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -32,13 +35,28 @@ public class TweetControllerIntegrationTest {
 
     @MockBean
     private TwitterService twitterService;
-    private static final String TWEET_ID = "tweetId";
-    private static final String BASE_URL = "/twitter/tweet";
+    private static final Long TWEET_ID = 1L;
+    private static final String BASE_URL = "/twitter/tweets";
+
+    @Test
+    public void getAllTweets_shouldReturnTweetInformation() throws Exception {
+        when(this.twitterService.getAllTweets()).thenReturn(
+                Arrays.asList(
+                        TweetResponse.builder().id(TWEET_ID).username("andrea_juanma").text("This is a new tweet.").build(),
+                        TweetResponse.builder().id(2L).username("jguijars").text("This is an old tweet.").build()));
+
+        mockMvc.perform(get(BASE_URL + "/"))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andExpect(jsonPath("$[0].username").value("andrea_juanma"))
+                .andExpect(jsonPath("$[0].id").value(TWEET_ID))
+                .andExpect(jsonPath("$[0].text").value("This is a new tweet."))
+                .andExpect(jsonPath("$", hasSize(2)));
+    }
 
     @Test
     public void getTweet_shouldReturnTweetInformation() throws Exception {
         when(this.twitterService.getTweet(any())).thenReturn(TweetResponse.builder()
-                .id("id")
+                .id(TWEET_ID)
                 .username("andrea_juanma")
                 .text("This is a new tweet.")
                 .build());
@@ -46,7 +64,7 @@ public class TweetControllerIntegrationTest {
         mockMvc.perform(get(BASE_URL + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
-                .andExpect(jsonPath("$.id").value("id"))
+                .andExpect(jsonPath("$.id").value(TWEET_ID))
                 .andExpect(jsonPath("$.text").value("This is a new tweet."));
     }
 
@@ -65,7 +83,7 @@ public class TweetControllerIntegrationTest {
                 MediaType.IMAGE_JPEG_VALUE,
                 "Image for tweet".getBytes());
         when(this.twitterService.postTweet(any(), any())).thenReturn(TweetResponse.builder()
-                .id("id")
+                .id(TWEET_ID)
                 .username("andrea_juanma")
                 .text("This is a new tweet.")
                 .build());
@@ -73,7 +91,7 @@ public class TweetControllerIntegrationTest {
         mockMvc.perform(multipart(BASE_URL).file(multipartFile).contentType(MediaType.APPLICATION_JSON).content(jsonRequest))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
-                .andExpect(jsonPath("$.id").value("id"))
+                .andExpect(jsonPath("$.id").value(TWEET_ID))
                 .andExpect(jsonPath("$.text").value("This is a new tweet."));
     }
 
@@ -92,7 +110,7 @@ public class TweetControllerIntegrationTest {
     @Test
     public void deleteTweet_shouldReturnTweetInformation() throws Exception {
         when(this.twitterService.deleteTweet(any())).thenReturn(TweetResponse.builder()
-                .id("id")
+                .id(TWEET_ID)
                 .username("andrea_juanma")
                 .text("This is a new tweet.")
                 .build());
@@ -100,7 +118,7 @@ public class TweetControllerIntegrationTest {
         mockMvc.perform(delete(BASE_URL + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
-                .andExpect(jsonPath("$.id").value("id"))
+                .andExpect(jsonPath("$.id").value(TWEET_ID))
                 .andExpect(jsonPath("$.text").value("This is a new tweet."));
     }
 

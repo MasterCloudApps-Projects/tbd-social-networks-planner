@@ -35,7 +35,7 @@ public class TwitterActionsControllerIntegrationTest {
     @MockBean
     private TwitterService twitterService;
 
-    private static final String TWEET_ID = "tweetId";
+    private static final Long TWEET_ID = 1L;
     private static final String BASE_URL = "/twitter/actions";
     private static final String RETWEET = "/retweet";
     private static final String LIKE = "/like";
@@ -44,7 +44,7 @@ public class TwitterActionsControllerIntegrationTest {
     @Test
     public void retweet_shouldReturnTweetInformation() throws Exception {
         when(this.twitterService.retweet(any())).thenReturn(TweetResponse.builder()
-                .id("id")
+                .id(TWEET_ID)
                 .username("andrea_juanma")
                 .text("This is a new tweet.")
                 .build());
@@ -52,7 +52,7 @@ public class TwitterActionsControllerIntegrationTest {
         mockMvc.perform(post(BASE_URL + RETWEET + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
-                .andExpect(jsonPath("$.id").value("id"))
+                .andExpect(jsonPath("$.id").value(TWEET_ID))
                 .andExpect(jsonPath("$.text").value("This is a new tweet."));
     }
 
@@ -67,7 +67,7 @@ public class TwitterActionsControllerIntegrationTest {
     @Test
     public void undoRetweet_shouldReturnTweetInformation() throws Exception {
         when(this.twitterService.undoRetweet(any())).thenReturn(TweetResponse.builder()
-                .id("id")
+                .id(TWEET_ID)
                 .username("andrea_juanma")
                 .text("This is a new tweet.")
                 .build());
@@ -75,7 +75,7 @@ public class TwitterActionsControllerIntegrationTest {
         mockMvc.perform(delete(BASE_URL + RETWEET + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
-                .andExpect(jsonPath("$.id").value("id"))
+                .andExpect(jsonPath("$.id").value(TWEET_ID))
                 .andExpect(jsonPath("$.text").value("This is a new tweet."));
     }
 
@@ -90,7 +90,7 @@ public class TwitterActionsControllerIntegrationTest {
     @Test
     public void like_shouldReturnTweetInformation() throws Exception {
         when(this.twitterService.like(any())).thenReturn(TweetResponse.builder()
-                .id("id")
+                .id(TWEET_ID)
                 .username("andrea_juanma")
                 .text("This is a new tweet.")
                 .build());
@@ -98,7 +98,7 @@ public class TwitterActionsControllerIntegrationTest {
         mockMvc.perform(post(BASE_URL + LIKE + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
-                .andExpect(jsonPath("$.id").value("id"))
+                .andExpect(jsonPath("$.id").value(TWEET_ID))
                 .andExpect(jsonPath("$.text").value("This is a new tweet."));
     }
 
@@ -113,7 +113,7 @@ public class TwitterActionsControllerIntegrationTest {
     @Test
     public void undoLike_shouldReturnTweetInformation() throws Exception {
         when(this.twitterService.undoLike(any())).thenReturn(TweetResponse.builder()
-                .id("id")
+                .id(TWEET_ID)
                 .username("andrea_juanma")
                 .text("This is a new tweet.")
                 .build());
@@ -121,7 +121,7 @@ public class TwitterActionsControllerIntegrationTest {
         mockMvc.perform(delete(BASE_URL + LIKE + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
-                .andExpect(jsonPath("$.id").value("id"))
+                .andExpect(jsonPath("$.id").value(TWEET_ID))
                 .andExpect(jsonPath("$.text").value("This is a new tweet."));
     }
 
@@ -138,8 +138,8 @@ public class TwitterActionsControllerIntegrationTest {
         when(this.twitterService.replyTweet(any(), any())).thenReturn(
                 TweetRepliesResponse
                 .builder()
-                        .tweetId("tweetId").replies(List.of(TweetResponse.builder()
-                        .id("id")
+                        .tweetId(TWEET_ID).replies(List.of(TweetResponse.builder()
+                        .id(2L)
                         .username("andrea_juanma")
                         .text("This is a new tweet.")
                         .build())).build());
@@ -149,9 +149,9 @@ public class TwitterActionsControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.user_replies[0].username").value("andrea_juanma"))
-                .andExpect(jsonPath("$.user_replies[0].id").value("id"))
+                .andExpect(jsonPath("$.user_replies[0].id").value(2L))
                 .andExpect(jsonPath("$.user_replies[0].text").value("This is a new tweet."))
-                .andExpect(jsonPath("$.tweet_id").value("tweetId"));
+                .andExpect(jsonPath("$.tweet_id").value(TWEET_ID));
     }
 
     @Test

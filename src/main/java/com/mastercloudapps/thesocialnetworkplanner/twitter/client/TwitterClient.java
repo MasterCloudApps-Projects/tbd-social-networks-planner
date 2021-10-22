@@ -24,11 +24,11 @@ public class TwitterClient {
         this.twitterSession = twitterSession;
     }
 
-    public Status getTweet(String tweetId) throws TwitterClientException {
+    public Status getTweet(Long tweetId) throws TwitterClientException {
         Status status;
         if (tweetId != null) {
             try {
-                status = twitterSession.showStatus(Long.parseLong(tweetId));
+                status = twitterSession.showStatus(tweetId);
                 log.info("Showing @" + status.getUser().getScreenName() + "'s tweet.");
                 log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
                 return status;
@@ -81,11 +81,11 @@ public class TwitterClient {
         }
     }
 
-    public Status deleteTweet(String tweetId) throws TwitterClientException {
+    public Status deleteTweet(Long tweetId) throws TwitterClientException {
         Status status;
         if (tweetId != null) {
             try {
-                status = twitterSession.destroyStatus(Long.parseLong(tweetId));
+                status = twitterSession.destroyStatus(tweetId);
                 log.info("Showing @" + status.getUser().getScreenName() + "'s tweet.");
                 log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
             } catch (TwitterException te) {
@@ -103,11 +103,11 @@ public class TwitterClient {
         return status;
     }
 
-    public Status retweet(String tweetId) throws TwitterClientException {
+    public Status retweet(Long tweetId) throws TwitterClientException {
         Status status = null;
         if (tweetId != null) {
             try {
-                status = twitterSession.retweetStatus(Long.parseLong(tweetId));
+                status = twitterSession.retweetStatus(tweetId);
 
                 log.info("Showing retweeted @" + status.getUser().getScreenName() + "'s tweet.");
                 log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
@@ -126,13 +126,13 @@ public class TwitterClient {
         return status;
     }
 
-    public Status undoRetweet(String tweetId) throws TwitterClientException {
+    public Status undoRetweet(Long tweetId) throws TwitterClientException {
         Status status = null;
         if (tweetId != null) {
             try {
-                status = twitterSession.showStatus(Long.parseLong(tweetId));
+                status = twitterSession.showStatus(tweetId);
                 if (status.isRetweeted()) {
-                    status = twitterSession.unRetweetStatus(Long.parseLong(tweetId));
+                    status = twitterSession.unRetweetStatus(tweetId);
                     log.info("Showing retweeted @" + status.getUser().getScreenName() + "'s tweet.");
                     log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
                 } else {
@@ -152,11 +152,11 @@ public class TwitterClient {
         return status;
     }
 
-    public Status like(String tweetId) throws TwitterClientException {
+    public Status like(Long tweetId) throws TwitterClientException {
         Status status = null;
         if (tweetId != null) {
             try {
-                status = twitterSession.createFavorite(Long.parseLong(tweetId));
+                status = twitterSession.createFavorite(tweetId);
 
                 log.info("Showing liked @" + status.getUser().getScreenName() + "'s tweet.");
                 log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
@@ -175,13 +175,13 @@ public class TwitterClient {
         return status;
     }
 
-    public Status undoLike(String tweetId) throws TwitterClientException {
+    public Status undoLike(Long tweetId) throws TwitterClientException {
         Status status = null;
         if (tweetId != null) {
             try {
-                status = twitterSession.showStatus(Long.parseLong(tweetId));
+                status = twitterSession.showStatus(tweetId);
                 if (status.isFavorited()) {
-                    status = twitterSession.destroyFavorite(Long.parseLong(tweetId));
+                    status = twitterSession.destroyFavorite(tweetId);
                     log.info("Showing liked @" + status.getUser().getScreenName() + "'s tweet.");
                     log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
                 } else {
@@ -201,12 +201,12 @@ public class TwitterClient {
         return status;
     }
 
-    public List<Status> replyTweet(String tweetId, String text) throws TwitterClientException {
+    public List<Status> replyTweet(Long tweetId, String text) throws TwitterClientException {
         Status status = null;
         if (tweetId != null) {
             try {
                 StatusUpdate statusUpdate = new StatusUpdate(text);
-                statusUpdate.setInReplyToStatusId(Long.parseLong(tweetId));
+                statusUpdate.setInReplyToStatusId(tweetId);
                 status = twitterSession.updateStatus(statusUpdate);
                 log.info("Showing reply to tweet:" + tweetId + " @" + status.getUser().getScreenName() + "'s tweet.");
                 log.info("@" + status.getUser().getScreenName() + " - " + status.getText());
@@ -223,7 +223,7 @@ public class TwitterClient {
         return status != null ? showReplies(status.getUser().getScreenName(), tweetId) : null;
     }
 
-    private List<Status> showReplies(String username, String tweetId) throws TwitterClientException {
+    private List<Status> showReplies(String username, Long tweetId) throws TwitterClientException {
         List<Status> replies = new ArrayList<>();
 
         try {
@@ -236,7 +236,7 @@ public class TwitterClient {
                 List<Status> tweets = results.getTweets();
 
                 for (Status tweet : tweets)
-                    if (tweet.getInReplyToStatusId() == Long.parseLong(tweetId))
+                    if (tweet.getInReplyToStatusId() == tweetId)
                         replies.add(tweet);
             } while ((query = results.nextQuery()) != null);
 

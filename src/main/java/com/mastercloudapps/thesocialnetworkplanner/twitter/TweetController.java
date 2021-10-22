@@ -4,8 +4,8 @@ import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TweetNotFou
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.UnauthorizedTwitterClientException;
-import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRequest;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -14,9 +14,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
+import java.util.List;
+
 @RestController
 @Validated
-@RequestMapping(value = "/twitter/tweet")
+@RequestMapping(value = "/twitter/tweets")
 public class TweetController {
     private final TwitterService twitterService;
 
@@ -24,8 +26,14 @@ public class TweetController {
         this.twitterService = twitterService;
     }
 
+    @GetMapping("/")
+    public ResponseEntity<List<TweetResponse>> getAllTweets() {
+        List<TweetResponse> tweetResponse = this.twitterService.getAllTweets();
+        return ResponseEntity.ok(tweetResponse);
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<TweetResponse> getTweet(@PathVariable String id) throws TwitterClientException {
+    public ResponseEntity<TweetResponse> getTweet(@PathVariable Long id) throws TwitterClientException {
         TweetResponse tweetResponse = this.twitterService.getTweet(id);
         return ResponseEntity.ok(tweetResponse);
     }
@@ -39,7 +47,7 @@ public class TweetController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<TweetResponse> deleteTweet(@PathVariable String id) throws TwitterClientException {
+    public ResponseEntity<TweetResponse> deleteTweet(@PathVariable Long id) throws TwitterClientException {
         TweetResponse tweetResponse = this.twitterService.deleteTweet(id);
         return ResponseEntity.ok(tweetResponse);
     }

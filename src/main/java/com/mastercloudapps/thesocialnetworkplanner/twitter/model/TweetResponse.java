@@ -10,7 +10,7 @@ import lombok.Data;
 @Builder
 public class TweetResponse {
     @JsonProperty("id")
-    private String id;
+    private Long id;
 
     @JsonProperty("username")
     private String username;
