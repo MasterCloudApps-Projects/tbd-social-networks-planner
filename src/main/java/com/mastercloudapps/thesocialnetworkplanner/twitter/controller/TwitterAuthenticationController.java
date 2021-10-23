@@ -1,7 +1,8 @@
-package com.mastercloudapps.thesocialnetworkplanner.twitter;
+package com.mastercloudapps.thesocialnetworkplanner.twitter.controller;
 
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.RequestTokenResponse;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.service.TwitterAuthenticationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;

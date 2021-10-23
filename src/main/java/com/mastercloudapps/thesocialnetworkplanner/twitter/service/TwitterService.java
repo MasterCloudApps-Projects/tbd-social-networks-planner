@@ -1,4 +1,4 @@
-package com.mastercloudapps.thesocialnetworkplanner.twitter;
+package com.mastercloudapps.thesocialnetworkplanner.twitter.service;
 
 import com.mastercloudapps.thesocialnetworkplanner.twitter.client.TwitterClient;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
@@ -41,7 +41,7 @@ public class TwitterService {
         Status status = this.twitterClient.getTweet(tweetId);
 
         if (status != null) {
-            return new TweetResponse(status.getId(), status.getUser().getScreenName(), status.getText());
+            return TweetResponse.builder().id(status.getId()).username(status.getUser().getScreenName()).text(status.getText()).build();
         } else {
             throw new TwitterBadRequestException();
         }
@@ -51,7 +51,7 @@ public class TwitterService {
         Status status = this.twitterClient.postTweet(tweetRequest.getText(), createFile(imageFile));
 
         if (status != null) {
-            return new TweetResponse(status.getId(), status.getUser().getScreenName(), status.getText());
+            return TweetResponse.builder().id(status.getId()).username(status.getUser().getScreenName()).text(status.getText()).build();
         } else {
             throw new TwitterBadRequestException();
         }
@@ -61,7 +61,7 @@ public class TwitterService {
         Status status = this.twitterClient.deleteTweet(tweetId);
 
         if (status != null) {
-            return new TweetResponse(status.getId(), status.getUser().getScreenName(), status.getText());
+            return TweetResponse.builder().id(status.getId()).username(status.getUser().getScreenName()).text(status.getText()).build();
         } else {
             throw new TwitterBadRequestException();
         }
@@ -71,7 +71,7 @@ public class TwitterService {
         Status status = this.twitterClient.retweet(tweetId);
 
         if (status != null) {
-            return new TweetResponse(status.getId(), status.getUser().getScreenName(), status.getText());
+            return TweetResponse.builder().id(status.getId()).username(status.getUser().getScreenName()).text(status.getText()).build();
         } else {
             throw new TwitterBadRequestException();
         }
@@ -81,7 +81,7 @@ public class TwitterService {
         Status status = this.twitterClient.undoRetweet(tweetId);
 
         if (status != null) {
-            return new TweetResponse(status.getId(), status.getUser().getScreenName(), status.getText());
+            return TweetResponse.builder().id(status.getId()).username(status.getUser().getScreenName()).text(status.getText()).build();
         } else {
             throw new TwitterBadRequestException();
         }
@@ -91,7 +91,7 @@ public class TwitterService {
         Status status = this.twitterClient.like(tweetId);
 
         if (status != null) {
-            return new TweetResponse(status.getId(), status.getUser().getScreenName(), status.getText());
+            return TweetResponse.builder().id(status.getId()).username(status.getUser().getScreenName()).text(status.getText()).build();
         } else {
             throw new TwitterBadRequestException();
         }
@@ -101,7 +101,7 @@ public class TwitterService {
         Status status = this.twitterClient.undoLike(tweetId);
 
         if (status != null) {
-            return new TweetResponse(status.getId(), status.getUser().getScreenName(), status.getText());
+            return TweetResponse.builder().id(status.getId()).username(status.getUser().getScreenName()).text(status.getText()).build();
         } else {
             throw new TwitterBadRequestException();
         }
@@ -112,12 +112,16 @@ public class TwitterService {
         List<TweetResponse> replies = new ArrayList<>();
         if (statuses != null) {
             for (Status status : statuses) {
-                replies.add(new TweetResponse(status.getId(), status.getUser().getScreenName(), status.getText()));
+                replies.add(TweetResponse.builder().id(status.getId()).username(status.getUser().getScreenName()).text(status.getText()).build());
             }
         } else {
             throw new TwitterBadRequestException();
         }
         return new TweetRepliesResponse(tweetId, replies);
+    }
+
+    public List<TweetResponse> getUnpublishedTweets() {
+        return this.tweetRepository.findByTwitterIdIsNull().stream().map(Tweet::toTweetResponse).collect(Collectors.toList());
     }
 
     private File createFile(MultipartFile multipartFile) throws IOException {

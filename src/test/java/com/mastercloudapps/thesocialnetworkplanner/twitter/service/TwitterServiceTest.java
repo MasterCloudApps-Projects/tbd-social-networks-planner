@@ -1,9 +1,10 @@
-package com.mastercloudapps.thesocialnetworkplanner.twitter;
+package com.mastercloudapps.thesocialnetworkplanner.twitter.service;
 
 import com.mastercloudapps.thesocialnetworkplanner.twitter.client.TwitterClient;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.client.data.Status;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.model.Tweet;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRepliesResponse;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRequest;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
@@ -15,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,10 +30,11 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class TwitterServiceTest {
 
+    private TwitterService twitterService;
+
     @Mock
     private TwitterClient twitterClient;
-
-    private TwitterService twitterService;
+    @Mock
     private TweetRepository tweetRepository;
 
     private static final Long TWEET_ID = 1L;
@@ -188,9 +191,31 @@ public class TwitterServiceTest {
         this.twitterService.replyTweet(TWEET_ID, new TweetRequest(TWEET_TEXT));
     }
 
+    @Test
+    public void getUnpublishedTweets_shouldReturnEmptyList() {
+        when(this.tweetRepository.findByTwitterIdIsNull()).thenReturn(new ArrayList<>());
+        List<TweetResponse> response = this.twitterService.getUnpublishedTweets();
+        assertThat(response).isEmpty();
+    }
+
+    @Test
+    public void getUnpublishedTweets_shouldReturnTweetInformation() {
+        Tweet tweet = tweet();
+        when(this.tweetRepository.findByTwitterIdIsNull()).thenReturn(List.of(tweet));
+        List<TweetResponse> tweets = this.twitterService.getUnpublishedTweets();
+        assertThat(tweets.size()).isEqualTo(1);
+        assertThat(tweets.get(0).getId()).isEqualTo(tweet.getId());
+        assertThat(tweets.get(0).getUsername()).isEqualTo(tweet.getUsername());
+        assertThat(tweets.get(0).getText()).isEqualTo(tweet.getText());
+    }
+
 
     private TweetRequest tweetRequest() {
         return TweetRequest.builder().text("This is a new tweet.").build();
+    }
+
+    private Tweet tweet() {
+        return Tweet.builder().id(TWEET_ID).text("This is a new tweet.").username("andrea_juanma").build();
     }
 
 }

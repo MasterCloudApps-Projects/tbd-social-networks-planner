@@ -12,6 +12,9 @@ public class TweetResponse {
     @JsonProperty("id")
     private Long id;
 
+    @JsonProperty("twitterId")
+    private Long twitterId;
+
     @JsonProperty("username")
     private String username;
 

@@ -1,4 +1,4 @@
-package com.mastercloudapps.thesocialnetworkplanner.twitter;
+package com.mastercloudapps.thesocialnetworkplanner.twitter.controller;
 
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TweetNotFoundException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
@@ -6,6 +6,7 @@ import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClie
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.UnauthorizedTwitterClientException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRequest;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.service.TwitterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -26,7 +27,7 @@ public class TweetController {
         this.twitterService = twitterService;
     }
 
-    @GetMapping("/")
+    @GetMapping()
     public ResponseEntity<List<TweetResponse>> getAllTweets() {
         List<TweetResponse> tweetResponse = this.twitterService.getAllTweets();
         return ResponseEntity.ok(tweetResponse);
@@ -49,6 +50,12 @@ public class TweetController {
     @DeleteMapping("/{id}")
     public ResponseEntity<TweetResponse> deleteTweet(@PathVariable Long id) throws TwitterClientException {
         TweetResponse tweetResponse = this.twitterService.deleteTweet(id);
+        return ResponseEntity.ok(tweetResponse);
+    }
+
+    @GetMapping("/unpublished")
+    public ResponseEntity<List<TweetResponse>> getUnpublishedTweets() {
+        List<TweetResponse> tweetResponse = this.twitterService.getUnpublishedTweets();
         return ResponseEntity.ok(tweetResponse);
     }
 
