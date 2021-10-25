@@ -24,7 +24,9 @@ public class Tweet {
 
     private Long twitterId;
     private String text;
+    private String resourceUrl;
     private String username;
+    private Date scheduledDate;
     private Date creationDate;
     private Date updateDate;
 
