@@ -29,6 +29,7 @@ public class Tweet {
     private Date scheduledDate;
     private Date creationDate;
     private Date updateDate;
+    private Date deletedDate;
 
     public TweetResponse toTweetResponse() {
         return TweetResponse.builder().id(this.id).twitterId(this.twitterId).username(this.username).text(this.text).build();
