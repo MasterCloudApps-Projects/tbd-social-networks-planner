@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,10 +49,16 @@ public class TwitterService {
     }
 
     public TweetResponse postTweet(TweetRequest tweetRequest, MultipartFile imageFile) throws TwitterClientException, IOException {
+        Date creationDate = new Date();
         Status status = this.twitterClient.postTweet(tweetRequest.getText(), createFile(imageFile));
-
         if (status != null) {
-            return TweetResponse.builder().id(status.getId()).username(status.getUser().getScreenName()).text(status.getText()).build();
+            Tweet tweet = this.tweetRepository.save(Tweet.builder()
+                    .twitterId(status.getId())
+                    .text(tweetRequest.getText())
+                    .username(status.getUser().getScreenName())
+                    .creationDate(creationDate)
+                    .updateDate(status.getCreatedAt()).build());
+            return TweetResponse.builder().id(tweet.getId()).twitterId(status.getId()).username(status.getUser().getScreenName()).text(status.getText()).build();
         } else {
             throw new TwitterBadRequestException();
         }
