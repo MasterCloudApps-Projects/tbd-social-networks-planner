@@ -66,11 +66,13 @@ public class TwitterServiceTest {
     @Test
     public void postTweet_shouldReturnTweetInformation() throws TwitterClientException, IOException {
         when(this.twitterClient.postTweet(anyString(), any())).thenReturn(new Status());
+        when(this.tweetRepository.save(any())).thenReturn(Tweet.builder().id(1L).build());
         TweetResponse tweetResponse = this.twitterService.postTweet(tweetRequest(), null);
 
         assertEquals(tweetResponse.getUsername(), "andrea_juanma");
         assertEquals(tweetResponse.getText(), "This is a new tweet.");
-        assertEquals(tweetResponse.getId(), 0);
+        assertEquals(tweetResponse.getId(), 1);
+        assertEquals(tweetResponse.getTwitterId(), 0);
     }
 
     @Test(expected = TwitterBadRequestException.class)
