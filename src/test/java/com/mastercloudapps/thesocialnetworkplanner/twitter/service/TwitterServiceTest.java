@@ -2,6 +2,7 @@ package com.mastercloudapps.thesocialnetworkplanner.twitter.service;
 
 import com.mastercloudapps.thesocialnetworkplanner.twitter.client.TwitterClient;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.client.data.Status;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TweetNotFoundException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.Tweet;
@@ -18,6 +19,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNull;
@@ -25,6 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -85,12 +89,14 @@ public class TwitterServiceTest {
 
     @Test
     public void deleteTweet_shouldReturnTweetInformation() throws TwitterClientException {
+        when(this.tweetRepository.findByTwitterId(anyLong())).thenReturn(Optional.of(Tweet.builder().id(TWEET_ID).build()));
         when(this.twitterClient.deleteTweet(anyLong())).thenReturn(new Status());
         TweetResponse tweetResponse = this.twitterService.deleteTweet(TWEET_ID);
 
         assertEquals(tweetResponse.getUsername(), "andrea_juanma");
         assertEquals(tweetResponse.getText(), "This is a new tweet.");
-        assertEquals(tweetResponse.getId(), 0);
+        assertEquals(tweetResponse.getId(), TWEET_ID);
+        verify(this.tweetRepository, times(1)).save(any());
     }
 
     @Test(expected = TwitterBadRequestException.class)

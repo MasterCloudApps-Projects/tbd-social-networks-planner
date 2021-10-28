@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Data
@@ -65,10 +66,16 @@ public class TwitterService {
     }
 
     public TweetResponse deleteTweet(Long tweetId) throws TwitterClientException {
+        Optional<Tweet> optionalTweet = this.tweetRepository.findByTwitterId(tweetId);
         Status status = this.twitterClient.deleteTweet(tweetId);
 
         if (status != null) {
-            return TweetResponse.builder().id(status.getId()).username(status.getUser().getScreenName()).text(status.getText()).build();
+            if (!optionalTweet.isEmpty()) {
+                Tweet tweet = optionalTweet.get();
+                tweet.delete();
+                this.tweetRepository.save(tweet);
+            }
+            return TweetResponse.builder().id(optionalTweet.orElse(null).getId()).twitterId(status.getId()).username(status.getUser().getScreenName()).text(status.getText()).build();
         } else {
             throw new TwitterBadRequestException();
         }
