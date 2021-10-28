@@ -34,5 +34,9 @@ public class Tweet {
     public TweetResponse toTweetResponse() {
         return TweetResponse.builder().id(this.id).twitterId(this.twitterId).username(this.username).text(this.text).build();
     }
+
+    public void delete() {
+        this.deletedDate = new Date();
+    }
 }
 
