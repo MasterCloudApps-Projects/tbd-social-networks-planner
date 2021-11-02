@@ -5,6 +5,7 @@ import com.mastercloudapps.thesocialnetworkplanner.twitter.client.data.Status;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TweetNotFoundException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.model.ScheduleTweetRequest;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.Tweet;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRepliesResponse;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRequest;
@@ -15,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import twitter4j.TwitterException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -217,9 +219,23 @@ public class TwitterServiceTest {
         assertThat(tweets.get(0).getText()).isEqualTo(tweet.getText());
     }
 
+    @Test
+    public void scheduleTweet_shouldReturnTweetInformation() {
+        Tweet tweet = tweet();
+        when(this.tweetRepository.save(any())).thenReturn(tweet);
+        TweetResponse tweetResponse = this.twitterService.scheduleTweet(scheduleTweetRequest());
+        assertThat(tweetResponse.getId()).isEqualTo(tweet.getId());
+        assertThat(tweetResponse.getUsername()).isEqualTo(tweet.getUsername());
+        assertThat(tweetResponse.getText()).isEqualTo(tweet.getText());
+    }
+
 
     private TweetRequest tweetRequest() {
         return TweetRequest.builder().text("This is a new tweet.").build();
+    }
+
+    private ScheduleTweetRequest scheduleTweetRequest() {
+        return new ScheduleTweetRequest();
     }
 
     private Tweet tweet() {

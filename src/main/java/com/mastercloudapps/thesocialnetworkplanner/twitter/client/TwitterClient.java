@@ -246,4 +246,14 @@ public class TwitterClient {
         return replies;
     }
 
+    public String getUsername() {
+        String username = null;
+        try {
+            username = this.twitterSession.getUsername();
+        } catch (TwitterException e) {
+            log.error("Error retrieving username");
+        }
+        return username;
+    }
+
 }

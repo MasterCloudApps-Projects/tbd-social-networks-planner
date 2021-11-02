@@ -88,4 +88,8 @@ public class TwitterSession {
     public void setOAuthAccessToken(AccessToken accessToken) {
         twitter.setOAuthAccessToken(accessToken);
     }
+
+    public String getUsername() throws TwitterException {
+        return twitter.getScreenName();
+    }
 }
