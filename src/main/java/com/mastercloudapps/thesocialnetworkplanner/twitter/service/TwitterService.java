@@ -3,15 +3,18 @@ package com.mastercloudapps.thesocialnetworkplanner.twitter.service;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.client.TwitterClient;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.model.ScheduleTweetRequest;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.Tweet;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRepliesResponse;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRequest;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.repository.TweetRepository;
 import lombok.Data;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import twitter4j.Status;
+import twitter4j.TwitterException;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,6 +27,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Data
+@Log4j2
 @Service
 public class TwitterService {
 
@@ -136,6 +140,11 @@ public class TwitterService {
 
     public List<TweetResponse> getUnpublishedTweets() {
         return this.tweetRepository.findByTwitterIdIsNull().stream().map(Tweet::toTweetResponse).collect(Collectors.toList());
+    }
+
+    public TweetResponse scheduleTweet(ScheduleTweetRequest tweetResquest) {
+        Tweet tweet = this.tweetRepository.save(Tweet.builder().text(tweetResquest.getText()).username(this.twitterClient.getUsername()).scheduledDate(tweetResquest.getPublishDateStore()).build());
+        return TweetResponse.builder().id(tweet.getId()).text(tweet.getText()).username(tweet.getUsername()).build();
     }
 
     private File createFile(MultipartFile multipartFile) throws IOException {

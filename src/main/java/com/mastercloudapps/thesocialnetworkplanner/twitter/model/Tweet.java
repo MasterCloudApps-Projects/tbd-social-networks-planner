@@ -32,7 +32,7 @@ public class Tweet {
     private Date deletedDate;
 
     public TweetResponse toTweetResponse() {
-        return TweetResponse.builder().id(this.id).twitterId(this.twitterId).username(this.username).text(this.text).build();
+        return TweetResponse.builder().id(this.id).twitterId(this.twitterId).username(this.username).text(this.text).scheduledDate(scheduledDate).build();
     }
 
     public void delete() {

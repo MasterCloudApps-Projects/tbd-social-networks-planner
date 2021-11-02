@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 
@@ -43,6 +44,7 @@ public class TweetControllerIntegrationTest {
     private static final Long TWEET_ID = 1L;
     private static final String BASE_URL = "/twitter/tweets";
     private static final String UNPUBLISHED_URL = "unpublished";
+    private static final String SCHEDULE_URL = "schedule";
 
     @Test
     public void getAllTweets_shouldReturnTweetInformation() throws Exception {
@@ -150,6 +152,22 @@ public class TweetControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].text").value("This is a new tweet."))
                 .andExpect(jsonPath("$[0].twitterId", is(nullValue())))
                 .andExpect(jsonPath("$", hasSize(2)));
+    }
+
+    @Test
+    public void scheduleTweet_shouldReturnTweetInformation() throws Exception {
+        String jsonRequest = "{ \"text\" : \"This is a new tweet\"," +
+                "\"publishDate\": \"21-02-2020 10:12:00\" }";
+
+        when(this.twitterService.scheduleTweet(any())).thenReturn(TweetResponse.builder().id(TWEET_ID).username("andrea_juanma").text("This is a new tweet.").build());
+
+        mockMvc.perform(post(BASE_URL + "/" + SCHEDULE_URL)
+                .content(jsonRequest)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andExpect(jsonPath("$.id").value(TWEET_ID))
+                .andExpect(jsonPath("$.username").value("andrea_juanma"))
+                .andExpect(jsonPath("$.text").value("This is a new tweet."));
     }
 
 }

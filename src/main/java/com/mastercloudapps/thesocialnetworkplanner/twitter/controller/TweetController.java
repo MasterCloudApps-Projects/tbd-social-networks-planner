@@ -4,17 +4,31 @@ import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TweetNotFou
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.UnauthorizedTwitterClientException;
-import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.model.ScheduleTweetRequest;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetRequest;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.model.TweetResponse;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.service.TwitterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import twitter4j.TwitterException;
 
+import javax.validation.Valid;
 import java.io.IOException;
-
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 @RestController
@@ -40,7 +54,7 @@ public class TweetController {
     }
 
     @PostMapping()
-    public ResponseEntity<TweetResponse> postTweet(@RequestBody TweetRequest tweetRequest, @RequestParam(value = "image",
+    public ResponseEntity<TweetResponse> postTweet(@Valid @RequestBody TweetRequest tweetRequest, @RequestParam(value = "image",
             required = false) MultipartFile multipartFile) throws
             TwitterClientException, IOException {
         TweetResponse tweetResponse = this.twitterService.postTweet(tweetRequest, multipartFile);
@@ -56,6 +70,14 @@ public class TweetController {
     @GetMapping("/unpublished")
     public ResponseEntity<List<TweetResponse>> getUnpublishedTweets() {
         List<TweetResponse> tweetResponse = this.twitterService.getUnpublishedTweets();
+        return ResponseEntity.ok(tweetResponse);
+    }
+
+    @PostMapping("/schedule")
+    public ResponseEntity<TweetResponse> scheduleTweet(@RequestBody @Valid ScheduleTweetRequest tweetRequest) throws ParseException, TwitterException {
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        tweetRequest.setPublishDateStore(formatter.parse(tweetRequest.getPublishDate()));
+        TweetResponse tweetResponse = twitterService.scheduleTweet(tweetRequest);
         return ResponseEntity.ok(tweetResponse);
     }
 
@@ -77,7 +99,7 @@ public class TweetController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
     }
 
-    @ExceptionHandler(TwitterBadRequestException.class)
+    @ExceptionHandler({TwitterBadRequestException.class, ParseException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<String> handleUnauthorizedTwitterBadRequestException(TwitterBadRequestException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
