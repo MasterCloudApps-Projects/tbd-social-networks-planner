@@ -81,6 +81,11 @@ public class TweetController {
         return ResponseEntity.ok(tweetResponse);
     }
 
+    @Scheduled(fixedDelay = 10000000)
+    public void postScheduledTweets() throws TwitterClientException {
+        this.twitterService.postScheduledTweets();
+    }
+
     @ExceptionHandler(TweetNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<String> handleTweetNotFoundException(TweetNotFoundException ex) {
