@@ -2,7 +2,6 @@ package com.mastercloudapps.thesocialnetworkplanner.twitter.service;
 
 import com.mastercloudapps.thesocialnetworkplanner.twitter.client.TwitterClient;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.client.data.Status;
-import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TweetNotFoundException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.ScheduleTweetRequest;
@@ -16,10 +15,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import twitter4j.TwitterException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -229,6 +228,43 @@ public class TwitterServiceTest {
         assertThat(tweetResponse.getText()).isEqualTo(tweet.getText());
     }
 
+    @Test
+    public void postScheduledTweets_shouldPostTweet() throws TwitterClientException {
+        Tweet tweet = tweet();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_WEEK, -1);
+        tweet.setScheduledDate(calendar.getTime());
+        when(this.tweetRepository.findByTwitterIdIsNull()).thenReturn(List.of(tweet));
+        when(this.twitterClient.getUsername()).thenReturn("andrea_juanma");
+        when(this.twitterClient.postTweet(anyString(), any())).thenReturn(new Status());
+        this.twitterService.postScheduledTweets();
+        verify(this.tweetRepository, times(1)).save(any());
+    }
+
+    @Test
+    public void postScheduledTweets_shouldNotPost_whenUsernameIsDifferent() throws TwitterClientException {
+        Tweet tweet = tweet();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_WEEK, -1);
+        tweet.setScheduledDate(calendar.getTime());
+        when(this.tweetRepository.findByTwitterIdIsNull()).thenReturn(List.of(tweet));
+        when(this.twitterClient.getUsername()).thenReturn("other");
+        this.twitterService.postScheduledTweets();
+        verify(this.twitterClient, times(0)).postTweet(anyString(), any());
+        verify(this.tweetRepository, times(0)).save(any());
+    }
+
+    @Test
+    public void postScheduledTweets_shouldNotPost_whenScheduledDateIsAfterToday() throws TwitterClientException {
+        Tweet tweet = tweet();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_WEEK, 1);
+        tweet.setScheduledDate(calendar.getTime());
+        when(this.tweetRepository.findByTwitterIdIsNull()).thenReturn(List.of(tweet));
+        this.twitterService.postScheduledTweets();
+        verify(this.twitterClient, times(0)).postTweet(anyString(), any());
+        verify(this.tweetRepository, times(0)).save(any());
+    }
 
     private TweetRequest tweetRequest() {
         return TweetRequest.builder().text("This is a new tweet.").build();
