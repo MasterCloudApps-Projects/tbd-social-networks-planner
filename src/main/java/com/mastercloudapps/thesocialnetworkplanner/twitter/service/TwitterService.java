@@ -143,8 +143,8 @@ public class TwitterService {
     }
 
     public TweetResponse scheduleTweet(ScheduleTweetRequest tweetResquest) {
-        Tweet tweet = this.tweetRepository.save(Tweet.builder().text(tweetResquest.getText()).username(this.twitterClient.getUsername()).scheduledDate(tweetResquest.getPublishDateStore()).build());
-        return TweetResponse.builder().id(tweet.getId()).text(tweet.getText()).username(tweet.getUsername()).build();
+        Tweet tweet = this.tweetRepository.save(Tweet.builder().text(tweetResquest.getText()).username(this.twitterClient.getUsername()).creationDate(new Date()).scheduledDate(tweetResquest.getPublishDateStore()).build());
+        return TweetResponse.builder().id(tweet.getId()).text(tweet.getText()).username(tweet.getUsername()).scheduledDate(tweet.getScheduledDate()).build();
     }
 
     public void postScheduledTweets() throws TwitterClientException {
