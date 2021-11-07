@@ -2,7 +2,9 @@ package com.mastercloudapps.thesocialnetworkplanner.instagram.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.*;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.service.InstagramService;
 import lombok.extern.log4j.Log4j2;
 import org.ff4j.FF4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.mastercloudapps.thesocialnetworkplanner.FeatureFlagsInitializer.FEATURE_FACEBOOK_LOGIN;
+import static com.mastercloudapps.thesocialnetworkplanner.FeatureFlagsInitializer.FEATURE_INSTAGRAM_SERVICE;
 
 @RestController
 @Validated
@@ -55,33 +57,37 @@ public class InstagramController {
     private final FF4j ff4j;
     private String code;
 
-    public InstagramController(RestTemplate restTemplate, ObjectMapper objectMapper, FF4j ff4j) {
+    private final InstagramService instagramService;
+
+    public InstagramController(RestTemplate restTemplate, ObjectMapper objectMapper, FF4j ff4j, InstagramService instagramService) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.ff4j = ff4j;
+        this.instagramService = instagramService;
     }
 
-    @GetMapping("/auth")
-    public ResponseEntity authenticate() {
-        if (ff4j.check(FEATURE_FACEBOOK_LOGIN)) {
+    @GetMapping("/login")
+    public ResponseEntity login() throws InstagramException {
+        DeviceLoginResponse deviceLoginResponse;
+        if (!ff4j.check(FEATURE_INSTAGRAM_SERVICE)) {
             DeviceLoginRequest deviceLoginRequest = DeviceLoginRequest.builder().accessToken(accessToken).redirectUri(redirectUri).scope(scope).build();
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<String> deviceLoginEntity = new HttpEntity(deviceLoginRequest.toJsonString(), httpHeaders);
             ResponseEntity<DeviceLoginResponse> response = this.restTemplate.exchange(deviceLoginUrl, HttpMethod.POST, deviceLoginEntity, DeviceLoginResponse.class);
-            DeviceLoginResponse deviceLoginResponse = response.getBody();
+            deviceLoginResponse = response.getBody();
             if (deviceLoginResponse != null) {
                 code = deviceLoginResponse.getCode();
             }
-            return ResponseEntity.ok("Enter this code " + deviceLoginResponse.getUserCode() + " on " + deviceLoginResponse.getVerificationUri());
         } else {
-            return ResponseEntity.ok("TBD");
+             deviceLoginResponse = this.instagramService.login();
         }
+        return ResponseEntity.ok("Enter this code " + deviceLoginResponse.getUserCode() + " on " + deviceLoginResponse.getVerificationUri());
     }
 
-    @GetMapping("/accounts")
-    public List<String> getInstagramAccounts() throws JsonProcessingException {
-        if(ff4j.check(FEATURE_FACEBOOK_LOGIN)) {
+    @GetMapping("/auth")
+    public ResponseEntity<List<String>> authenticate() throws JsonProcessingException, InstagramException {
+        if (!ff4j.check(FEATURE_INSTAGRAM_SERVICE)) {
             AccessTokenRequest accessTokenRequest = AccessTokenRequest.builder()
                     .code(code)
                     .accessToken(accessToken)
@@ -118,10 +124,10 @@ public class InstagramController {
                     log.error("No ig account associated to: " + page.getId());
                 }
             }
-
-            return igBusinessAccounts;
+            return ResponseEntity.ok(igBusinessAccounts);
         } else {
-            return List.of("TBD");
+            //TODO: devolver solo una cuenta (?) se puede tener varias (?)
+            return ResponseEntity.ok(this.instagramService.authenticate());
         }
     }
 }
