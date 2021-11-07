@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.mastercloudapps.thesocialnetworkplanner.FeatureFlagsInitializer.FEATURE_INSTAGRAM_SERVICE;
+import static com.mastercloudapps.thesocialnetworkplanner.ff4jconfig.FeatureFlagsInitializer.FEATURE_INSTAGRAM_SERVICE;
 
 @RestController
 @Validated
