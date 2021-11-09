@@ -2,22 +2,25 @@ package com.mastercloudapps.thesocialnetworkplanner.instagram.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.*;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.service.InstagramService;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterBadRequestException;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.TwitterClientException;
+import com.mastercloudapps.thesocialnetworkplanner.twitter.exception.UnauthorizedTwitterClientException;
 import lombok.extern.log4j.Log4j2;
 import org.ff4j.FF4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -80,13 +83,14 @@ public class InstagramController {
                 code = deviceLoginResponse.getCode();
             }
         } else {
-             deviceLoginResponse = this.instagramService.login();
+            deviceLoginResponse = this.instagramService.login();
         }
         return ResponseEntity.ok("Enter this code " + deviceLoginResponse.getUserCode() + " on " + deviceLoginResponse.getVerificationUri());
     }
 
     @GetMapping("/auth")
-    public ResponseEntity<List<String>> authenticate() throws JsonProcessingException, InstagramException {
+    public ResponseEntity<String> authenticate() throws JsonProcessingException, InstagramException {
+        String accountId;
         if (!ff4j.check(FEATURE_INSTAGRAM_SERVICE)) {
             AccessTokenRequest accessTokenRequest = AccessTokenRequest.builder()
                     .code(code)
@@ -124,10 +128,25 @@ public class InstagramController {
                     log.error("No ig account associated to: " + page.getId());
                 }
             }
-            return ResponseEntity.ok(igBusinessAccounts);
+            accountId = igBusinessAccounts.stream().findFirst().get();
         } else {
-            //TODO: devolver solo una cuenta (?) se puede tener varias (?)
-            return ResponseEntity.ok(this.instagramService.authenticate());
+            accountId = this.instagramService.authenticate();
         }
+
+        return ResponseEntity.ok(accountId != null
+                ? "Using Instagram Business Account: " + this.instagramService.authenticate()
+                : "No Instagram Business Account to work with.");
+    }
+
+    @ExceptionHandler(InstagramException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<String> handleInstagramException(InstagramException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
+
+    @ExceptionHandler({InstagramBadRequestException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<String> handleInstagramBadRequestException(InstagramBadRequestException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }

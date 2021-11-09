@@ -2,12 +2,14 @@ package com.mastercloudapps.thesocialnetworkplanner.instagram.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.config.InstagramSession;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -68,15 +70,19 @@ public class InstagramService {
             if (deviceLoginResponse != null) {
                 this.instagramSession.setAuthCode(deviceLoginResponse.getCode());
             }
-        } catch (Exception ex) {
+        } catch (HttpClientErrorException ex) {
             log.error("Exception on [deviceLogin]: " + ex.getMessage());
-            throw new InstagramException();
+            if (ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
+                throw new InstagramBadRequestException(ex.getMessage());
+            } else {
+                throw new InstagramException(ex.getMessage());
+            }
         }
 
         return deviceLoginResponse;
     }
 
-    public List<String> authenticate() throws InstagramException {
+    public String authenticate() throws InstagramException {
         PagesResponse pagesResponse = this.getPages();
         List<String> igBusinessAccounts = new ArrayList<>();
         if (pagesResponse != null) {
@@ -90,10 +96,9 @@ public class InstagramService {
                     log.warn("Exception getting instagram account. " + ex.getMessage());
                 }
             }
-            //TODO: revisar si se pueden tener varias cuentas de IG Business asociadas a una cuenta de FB
             this.instagramSession.setAccountId(igBusinessAccounts.stream().findFirst().orElse(null));
         }
-        return igBusinessAccounts;
+        return this.instagramSession.getAccountId();
     }
 
     private void getAccessToken() throws InstagramException {
@@ -112,13 +117,13 @@ public class InstagramService {
             }
         } catch (Exception ex) {
             log.error("Exception getting instagram [accessToken]: " + ex.getMessage());
-            throw new InstagramException("Error getting accessToken");
+            throw new InstagramException("Error getting access token from Facebook API");
         }
     }
 
     private PagesResponse getPages() throws InstagramException {
         this.getAccessToken();
-        PagesResponse pageResponse = null;
+        PagesResponse pageResponse;
         try {
             UriComponents builder = UriComponentsBuilder.fromHttpUrl(getPages).queryParam("access_token",
                     instagramSession.getAccessToken()).build();
@@ -127,6 +132,7 @@ public class InstagramService {
             pageResponse = objectMapper.readValue(pagesResponse.getBody(), PagesResponse.class);
         } catch (Exception ex) {
             log.error("Error getting [facebook-pages]: " + ex.getMessage());
+            throw new InstagramException("Error getting pages from Facebook API.");
         }
         return pageResponse;
     }
@@ -147,7 +153,7 @@ public class InstagramService {
             }
         } catch (Exception ex) {
             log.error("Error getting [instagram-account]: " + ex.getMessage());
-            throw new InstagramException("Error getting [instagram-account]");
+            throw new InstagramException("Error getting instagram-account");
         }
         return null;
     }
