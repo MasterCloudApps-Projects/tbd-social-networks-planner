@@ -69,6 +69,9 @@ public class InstagramService {
 
             if (deviceLoginResponse != null) {
                 this.instagramSession.setAuthCode(deviceLoginResponse.getCode());
+                return deviceLoginResponse;
+            } else {
+                throw new InstagramException("Error logging into Facebook API");
             }
         } catch (HttpClientErrorException ex) {
             log.error("Exception on [deviceLogin]: " + ex.getMessage());
@@ -78,8 +81,6 @@ public class InstagramService {
                 throw new InstagramException(ex.getMessage());
             }
         }
-
-        return deviceLoginResponse;
     }
 
     public String authenticate() throws InstagramException {

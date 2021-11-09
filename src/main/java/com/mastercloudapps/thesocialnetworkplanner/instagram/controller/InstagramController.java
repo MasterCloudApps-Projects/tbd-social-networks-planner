@@ -28,9 +28,7 @@ public class InstagramController {
     @GetMapping("/login")
     public ResponseEntity<String> login() throws InstagramException {
         DeviceLoginResponse deviceLoginResponse = this.instagramService.login();
-        return ResponseEntity.ok(deviceLoginResponse != null
-                ? "Enter this code " + deviceLoginResponse.getUserCode() + " on " + deviceLoginResponse.getVerificationUri()
-                : "Cannot login this device into Facebook API.");
+        return ResponseEntity.ok("Enter this code " + deviceLoginResponse.getUserCode() + " on " + deviceLoginResponse.getVerificationUri());
     }
 
     @GetMapping("/auth")
