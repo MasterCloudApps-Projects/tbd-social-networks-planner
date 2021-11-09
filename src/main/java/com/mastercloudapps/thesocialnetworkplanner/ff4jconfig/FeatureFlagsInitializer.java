@@ -8,7 +8,6 @@ import javax.annotation.PostConstruct;
 @Component
 public class FeatureFlagsInitializer {
     public static String FEATURE_TWITTER = "twitter";
-    public static String FEATURE_INSTAGRAM_SERVICE = "instagramService";
     private final FF4j ff4j;
 
     public FeatureFlagsInitializer(FF4j ff4j) {
@@ -19,10 +18,6 @@ public class FeatureFlagsInitializer {
     public void initializeFlags() {
         if (!ff4j.exist(FEATURE_TWITTER)) {
             ff4j.createFeature(FEATURE_TWITTER, false);
-        }
-
-        if (!ff4j.exist(FEATURE_INSTAGRAM_SERVICE)) {
-            ff4j.createFeature(FEATURE_INSTAGRAM_SERVICE, false);
         }
     }
 }
