@@ -27,13 +27,13 @@ public class InstagramService {
     private String deviceLoginUrl;
 
     @Value("${instagram.getAccessToken}")
-    private String getAccessTokenUrl;
+    private String accessTokenUrl;
 
     @Value("${instagram.getPages}")
-    private String getPages;
+    private String pagesUrl;
 
     @Value("${instagram.getIGBussinessAccount}")
-    private String getInstagramAccount;
+    private String instagramAccountUrl;
 
     @Value("${instagram.scope}")
     private String scope;
@@ -43,6 +43,12 @@ public class InstagramService {
 
     @Value("${instagram.accessToken}")
     private String loginAccessToken;
+
+    @Value("${instagram.container}")
+    private String imageContainerUrl;
+
+    @Value("${instagram.publishImage}")
+    private String publishImage;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -110,7 +116,7 @@ public class InstagramService {
 
         AccessTokenResponse accessTokenResponse;
         try {
-            ResponseEntity<String> responseAccessToken = this.restTemplate.exchange(getAccessTokenUrl, HttpMethod.POST,
+            ResponseEntity<String> responseAccessToken = this.restTemplate.exchange(accessTokenUrl, HttpMethod.POST,
                     getEntity(accessTokenRequest.toJsonString()), String.class);
             accessTokenResponse = objectMapper.readValue(responseAccessToken.getBody(), AccessTokenResponse.class);
             if (accessTokenResponse != null) {
@@ -126,7 +132,7 @@ public class InstagramService {
         this.getAccessToken();
         PagesResponse pageResponse;
         try {
-            UriComponents builder = UriComponentsBuilder.fromHttpUrl(getPages).queryParam("access_token",
+            UriComponents builder = UriComponentsBuilder.fromHttpUrl(pagesUrl).queryParam("access_token",
                     instagramSession.getAccessToken()).build();
             ResponseEntity<String> pagesResponse = this.restTemplate.exchange(builder.toUriString(), HttpMethod.GET,
                     getEntity(null), String.class);
@@ -141,7 +147,7 @@ public class InstagramService {
     private String getInstagramBusinessAccount(String pageId) throws InstagramException {
         Map<String, String> uriParams = new HashMap<>();
         uriParams.put("pageId", pageId);
-        UriComponents builder = UriComponentsBuilder.fromHttpUrl(getInstagramAccount)
+        UriComponents builder = UriComponentsBuilder.fromHttpUrl(instagramAccountUrl)
                 .queryParam("access_token", this.instagramSession.getAccessToken())
                 .build();
         try {
@@ -158,6 +164,55 @@ public class InstagramService {
         }
         return null;
     }
+
+    public String post(String url, String caption) throws InstagramException {
+        String containerId = this.createContainer(url, caption);
+        return this.publishImage(containerId);
+    }
+
+    private String createContainer(String url, String caption) throws InstagramException {
+        this.checkAccountId();
+        Map<String, String> uriParams = new HashMap<>();
+        uriParams.put("accountId", this.instagramSession.getAccountId());
+        UriComponents builder = UriComponentsBuilder.fromHttpUrl(imageContainerUrl)
+                .queryParam("access_token", this.instagramSession.getAccessToken())
+                .queryParam("caption", caption)
+                .queryParam("image_url", url)
+                .build();
+        try {
+            ResponseEntity<ImageIdResponse> instagramBusinessAccount = this.restTemplate.exchange(builder.toUriString(),
+                    HttpMethod.POST, getEntity(null), ImageIdResponse.class, uriParams);
+            return instagramBusinessAccount.getBody() != null ? instagramBusinessAccount.getBody().getId() : null;
+        } catch (Exception ex) {
+            log.error("Error getting [image-container]: " + ex.getMessage());
+            throw new InstagramException("Error getting image-container");
+        }
+    }
+
+    private String publishImage(String imageContainerId) throws InstagramException {
+        this.checkAccountId();
+        Map<String, String> uriParams = new HashMap<>();
+        uriParams.put("accountId", this.instagramSession.getAccountId());
+        UriComponents builder = UriComponentsBuilder.fromHttpUrl(publishImage)
+                .queryParam("access_token", this.instagramSession.getAccessToken())
+                .queryParam("creation_id", imageContainerId)
+                .build();
+        try {
+            ResponseEntity<ImageIdResponse> instagramBusinessAccount = this.restTemplate.exchange(builder.toUriString(),
+                    HttpMethod.POST, getEntity(null), ImageIdResponse.class, uriParams);
+            return instagramBusinessAccount.getBody() != null ? instagramBusinessAccount.getBody().getId() : null;
+        } catch (Exception ex) {
+            log.error("Error getting [publish-image]: " + ex.getMessage());
+            throw new InstagramException("Error getting publish-image");
+        }
+    }
+
+    private void checkAccountId() throws InstagramBadRequestException {
+        if (this.instagramSession.getAccountId() == null) {
+            throw new InstagramBadRequestException("No Instagram Business account");
+        }
+    }
+
 
     private HttpEntity<String> getEntity(String body) {
         HttpHeaders httpHeaders = new HttpHeaders();
