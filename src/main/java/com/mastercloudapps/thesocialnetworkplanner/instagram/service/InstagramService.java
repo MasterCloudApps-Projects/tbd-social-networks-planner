@@ -109,6 +109,7 @@ public class InstagramService {
     }
 
     private void getAccessToken() throws InstagramException {
+        this.waitForFacebook();
         AccessTokenRequest accessTokenRequest = AccessTokenRequest.builder()
                 .code(instagramSession.getAuthCode())
                 .accessToken(loginAccessToken)
@@ -130,6 +131,7 @@ public class InstagramService {
 
     private PagesResponse getPages() throws InstagramException {
         this.getAccessToken();
+        this.waitForFacebook();
         PagesResponse pageResponse;
         try {
             UriComponents builder = UriComponentsBuilder.fromHttpUrl(pagesUrl).queryParam("access_token",
@@ -145,6 +147,7 @@ public class InstagramService {
     }
 
     private String getInstagramBusinessAccount(String pageId) throws InstagramException {
+        this.waitForFacebook();
         Map<String, String> uriParams = new HashMap<>();
         uriParams.put("pageId", pageId);
         UriComponents builder = UriComponentsBuilder.fromHttpUrl(instagramAccountUrl)
@@ -167,6 +170,7 @@ public class InstagramService {
 
     public String post(String url, String caption) throws InstagramException {
         String containerId = this.createContainer(url, caption);
+        this.waitForFacebook();
         return this.publishImage(containerId);
     }
 
@@ -213,6 +217,13 @@ public class InstagramService {
         }
     }
 
+    private void waitForFacebook() {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+        }
+    }
 
     private HttpEntity<String> getEntity(String body) {
         HttpHeaders httpHeaders = new HttpHeaders();
