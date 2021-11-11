@@ -4,14 +4,16 @@ import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.Instagram
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.DeviceLoginResponse;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.service.InstagramService;
+import com.mastercloudapps.thesocialnetworkplanner.resource.service.ResourceService;
 import lombok.extern.log4j.Log4j2;
 import org.ff4j.FF4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import static com.mastercloudapps.thesocialnetworkplanner.ff4jconfig.FeatureFlagsInitializer.FEATURE_POST_IMAGE;
+import static com.mastercloudapps.thesocialnetworkplanner.ff4jconfig.FeatureFlagsInitializer.FEATURE_POST_IMAGE_WITH_RESOURCE;
 
 @RestController
 @Validated
@@ -20,11 +22,13 @@ import static com.mastercloudapps.thesocialnetworkplanner.ff4jconfig.FeatureFlag
 public class InstagramController {
 
     private final InstagramService instagramService;
+    private final ResourceService resourceService;
 
     private final FF4j ff4j;
 
-    public InstagramController(InstagramService instagramService, FF4j ff4j) {
+    public InstagramController(InstagramService instagramService, ResourceService resourceService, FF4j ff4j) {
         this.instagramService = instagramService;
+        this.resourceService = resourceService;
         this.ff4j = ff4j;
     }
 
@@ -43,12 +47,17 @@ public class InstagramController {
     }
 
     @PostMapping("/image")
-    public ResponseEntity<String> post(@RequestParam("imageUrl") String url,
-                                       @RequestParam("caption") String caption) throws InstagramException {
-        if (ff4j.check(FEATURE_POST_IMAGE)) {
-            return ResponseEntity.ok(this.instagramService.post(url, caption));
+    public ResponseEntity<String> post(@RequestParam(value = "imageUrl", required = false) String url,
+                                       @RequestParam("caption") String caption, @RequestParam(value = "image",
+            required = false) MultipartFile multipartFile) throws InstagramException {
+        String resourceUrl;
+
+        if (ff4j.check(FEATURE_POST_IMAGE_WITH_RESOURCE)) {
+            resourceUrl = this.resourceService.createImage(multipartFile);
+        } else {
+            resourceUrl = url;
         }
-        return ResponseEntity.ok("TBD");
+        return ResponseEntity.ok(this.instagramService.post(resourceUrl, caption));
     }
 
     @ExceptionHandler(InstagramException.class)

@@ -8,7 +8,7 @@ import javax.annotation.PostConstruct;
 @Component
 public class FeatureFlagsInitializer {
     public static String FEATURE_TWITTER = "twitter";
-    public static String FEATURE_POST_IMAGE = "postImageOnInstagram";
+    public static String FEATURE_POST_IMAGE_WITH_RESOURCE = "postImageOnInstagramUploadingImageToS3";
     private final FF4j ff4j;
 
     public FeatureFlagsInitializer(FF4j ff4j) {
@@ -20,8 +20,8 @@ public class FeatureFlagsInitializer {
         if (!ff4j.exist(FEATURE_TWITTER)) {
             ff4j.createFeature(FEATURE_TWITTER, false);
         }
-        if (!ff4j.exist(FEATURE_POST_IMAGE)) {
-            ff4j.createFeature(FEATURE_POST_IMAGE, false);
+        if (!ff4j.exist(FEATURE_POST_IMAGE_WITH_RESOURCE)) {
+            ff4j.createFeature(FEATURE_POST_IMAGE_WITH_RESOURCE, false);
         }
     }
 }
