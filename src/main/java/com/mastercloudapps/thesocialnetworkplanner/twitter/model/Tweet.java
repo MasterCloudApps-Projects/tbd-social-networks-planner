@@ -1,15 +1,19 @@
 package com.mastercloudapps.thesocialnetworkplanner.twitter.model;
 
+import com.mastercloudapps.thesocialnetworkplanner.resource.model.Resource;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import java.util.Date;
+import java.util.List;
 
 @AllArgsConstructor
 @Builder
@@ -24,7 +28,8 @@ public class Tweet {
 
     private Long twitterId;
     private String text;
-    private String resourceUrl;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "tweet")
+    private List<Resource> resource;
     private String username;
     private Date scheduledDate;
     private Date creationDate;
