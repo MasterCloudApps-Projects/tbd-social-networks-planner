@@ -170,6 +170,9 @@ public class InstagramService {
 
     public String post(String url, String caption) throws InstagramException {
         String containerId = this.createContainer(url, caption);
+        if (containerId == null) {
+            throw new InstagramException("Error creating ig container for image");
+        }
         this.waitForFacebook();
         return this.publishImage(containerId);
     }
