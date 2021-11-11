@@ -1,6 +1,5 @@
 package com.mastercloudapps.thesocialnetworkplanner.instagram.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.DeviceLoginResponse;
@@ -11,7 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
+
+import static com.mastercloudapps.thesocialnetworkplanner.ff4jconfig.FeatureFlagsInitializer.FEATURE_POST_IMAGE;
 
 @RestController
 @Validated
@@ -21,8 +21,11 @@ public class InstagramController {
 
     private final InstagramService instagramService;
 
-    public InstagramController(InstagramService instagramService) {
+    private final FF4j ff4j;
+
+    public InstagramController(InstagramService instagramService, FF4j ff4j) {
         this.instagramService = instagramService;
+        this.ff4j = ff4j;
     }
 
     @GetMapping("/login")
@@ -37,6 +40,15 @@ public class InstagramController {
         return ResponseEntity.ok(accountId != null
                 ? "Using Instagram Business Account: " + this.instagramService.authenticate()
                 : "No Instagram Business Account to work with.");
+    }
+
+    @PostMapping("/image")
+    public ResponseEntity<String> post(@RequestParam("imageUrl") String url,
+                                       @RequestParam("caption") String caption) throws InstagramException {
+        if (ff4j.check(FEATURE_POST_IMAGE)) {
+            return ResponseEntity.ok(this.instagramService.post(url, caption));
+        }
+        return ResponseEntity.ok("TBD");
     }
 
     @ExceptionHandler(InstagramException.class)

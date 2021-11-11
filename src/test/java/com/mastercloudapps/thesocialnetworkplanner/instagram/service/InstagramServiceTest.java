@@ -42,9 +42,9 @@ public class InstagramServiceTest {
         this.instagramService = new InstagramService(this.restTemplate, this.objectMapper, this.instagramSession);
 
         ReflectionTestUtils.setField(instagramService, "deviceLoginUrl", "https://graph.facebook.com/v2.6/device/login");
-        ReflectionTestUtils.setField(instagramService, "getAccessTokenUrl", "https://graph.facebook.com/v2.6/device/login_status");
-        ReflectionTestUtils.setField(instagramService, "getPages", "https://graph.facebook.com/v12.0/me/accounts");
-        ReflectionTestUtils.setField(instagramService, "getInstagramAccount", "https://graph.facebook.com/v12.0/{pageId}?fields=instagram_business_account");
+        ReflectionTestUtils.setField(instagramService, "accessTokenUrl", "https://graph.facebook.com/v2.6/device/login_status");
+        ReflectionTestUtils.setField(instagramService, "pagesUrl", "https://graph.facebook.com/v12.0/me/accounts");
+        ReflectionTestUtils.setField(instagramService, "instagramAccountUrl", "https://graph.facebook.com/v12.0/{pageId}?fields=instagram_business_account");
         ReflectionTestUtils.setField(instagramService, "scope", "instagram_basic,instagram_content_publish,pages_read_engagement");
         ReflectionTestUtils.setField(instagramService, "redirectUri", "http://ais-tbd-social-networks.herokuapp.com/");
         ReflectionTestUtils.setField(instagramService, "loginAccessToken", "loginAccessToken");
