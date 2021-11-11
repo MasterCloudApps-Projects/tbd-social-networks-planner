@@ -13,7 +13,7 @@
 
     <groupId>com.mastercloudapps</groupId>
     <artifactId>the-social-network-planner</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <name>the-social-network-planner</name>
     <description>TFM Planner for posting in social network</description>
 
