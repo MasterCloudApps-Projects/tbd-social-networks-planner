@@ -1,5 +1,7 @@
 package com.mastercloudapps.thesocialnetworkplanner.instagram.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.config.InstagramSession;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramBadRequestException;
@@ -82,7 +84,7 @@ public class InstagramService {
         } catch (HttpClientErrorException ex) {
             log.error("Exception on [deviceLogin]: " + ex.getMessage());
             if (ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
-                throw new InstagramBadRequestException(ex.getMessage());
+                throw new InstagramBadRequestException("Error login: " + ex.getMessage());
             } else {
                 throw new InstagramException(ex.getMessage());
             }
@@ -123,25 +125,35 @@ public class InstagramService {
             if (accessTokenResponse != null) {
                 this.instagramSession.setAccessToken(accessTokenResponse.getAccessToken());
             }
-        } catch (Exception ex) {
+        } catch (HttpClientErrorException ex) {
             log.error("Exception getting instagram [accessToken]: " + ex.getMessage());
+            if (HttpStatus.BAD_REQUEST.equals(ex.getStatusCode())) {
+                throw new InstagramBadRequestException("Error getting accessToken: " + ex.getMessage());
+            }
             throw new InstagramException("Error getting access token from Facebook API");
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
         }
     }
 
     private PagesResponse getPages() throws InstagramException {
         this.getAccessToken();
         this.waitForFacebook();
-        PagesResponse pageResponse;
+        PagesResponse pageResponse = null;
         try {
             UriComponents builder = UriComponentsBuilder.fromHttpUrl(pagesUrl).queryParam("access_token",
                     instagramSession.getAccessToken()).build();
             ResponseEntity<String> pagesResponse = this.restTemplate.exchange(builder.toUriString(), HttpMethod.GET,
                     getEntity(null), String.class);
             pageResponse = objectMapper.readValue(pagesResponse.getBody(), PagesResponse.class);
-        } catch (Exception ex) {
+        } catch (HttpClientErrorException ex) {
             log.error("Error getting [facebook-pages]: " + ex.getMessage());
+            if (HttpStatus.BAD_REQUEST.equals(ex.getStatusCode())) {
+                throw new InstagramBadRequestException("Error on [get-pages]:" + ex.getMessage());
+            }
             throw new InstagramException("Error getting pages from Facebook API.");
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
         }
         return pageResponse;
     }
@@ -161,9 +173,14 @@ public class InstagramService {
                     return instagramBusinessAccountResponse.getInstagramBusinessAccount().getId();
                 }
             }
-        } catch (Exception ex) {
+        } catch (HttpClientErrorException ex) {
             log.error("Error getting [instagram-account]: " + ex.getMessage());
+            if (HttpStatus.BAD_REQUEST.equals(ex.getStatusCode())) {
+                throw new InstagramBadRequestException("Error getting [instagram-account]:" + ex.getMessage());
+            }
             throw new InstagramException("Error getting instagram-account");
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -171,7 +188,7 @@ public class InstagramService {
     public String post(String url, String caption) throws InstagramException {
         String containerId = this.createContainer(url, caption);
         if (containerId == null) {
-            throw new InstagramException("Error creating ig container for image");
+            throw new InstagramException("Cannot publish. Image container does not exist.");
         }
         this.waitForFacebook();
         return this.publishImage(containerId);
@@ -190,9 +207,12 @@ public class InstagramService {
             ResponseEntity<ImageIdResponse> instagramBusinessAccount = this.restTemplate.exchange(builder.toUriString(),
                     HttpMethod.POST, getEntity(null), ImageIdResponse.class, uriParams);
             return instagramBusinessAccount.getBody() != null ? instagramBusinessAccount.getBody().getId() : null;
-        } catch (Exception ex) {
+        } catch (HttpClientErrorException ex) {
             log.error("Error getting [image-container]: " + ex.getMessage());
-            throw new InstagramException("Error getting image-container");
+            if (HttpStatus.BAD_REQUEST.equals(ex.getStatusCode())) {
+                throw new InstagramBadRequestException("Error creating container for image: " + ex.getMessage());
+            }
+            throw new InstagramException(ex.getMessage());
         }
     }
 
@@ -208,9 +228,12 @@ public class InstagramService {
             ResponseEntity<ImageIdResponse> instagramBusinessAccount = this.restTemplate.exchange(builder.toUriString(),
                     HttpMethod.POST, getEntity(null), ImageIdResponse.class, uriParams);
             return instagramBusinessAccount.getBody() != null ? instagramBusinessAccount.getBody().getId() : null;
-        } catch (Exception ex) {
+        } catch (HttpClientErrorException ex) {
             log.error("Error getting [publish-image]: " + ex.getMessage());
-            throw new InstagramException("Error getting publish-image");
+            if (HttpStatus.BAD_REQUEST.equals(ex.getStatusCode())) {
+                throw new InstagramBadRequestException(ex.getMessage());
+            }
+            throw new InstagramException("Error getting [publish-image]: " + ex.getMessage());
         }
     }
 

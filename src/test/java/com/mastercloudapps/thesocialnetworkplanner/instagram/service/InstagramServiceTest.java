@@ -138,8 +138,8 @@ public class InstagramServiceTest {
         Assertions.assertThat(accountId).isNull();
     }
 
-    @Test(expected = InstagramException.class)
-    public void authenticate_shouldThrowException_whenCallGetPages() throws JsonProcessingException, InstagramException {
+    @Test(expected = InstagramBadRequestException.class)
+    public void authenticate_shouldThrowInstagramBadRequestException_whenCallGetPages() throws JsonProcessingException, InstagramException {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
                 .thenReturn(ResponseEntity.ok("body"))
                 .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
@@ -152,6 +152,19 @@ public class InstagramServiceTest {
     }
 
     @Test(expected = InstagramException.class)
+    public void authenticate_shouldThrowInstagramException_whenCallGetPages() throws JsonProcessingException, InstagramException {
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
+                .thenReturn(ResponseEntity.ok("body"))
+                .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
+        when(this.objectMapper.readValue(anyString(), eq(AccessTokenResponse.class))).thenReturn(accessTokenResponse());
+
+        this.instagramService.authenticate();
+
+        verify(this.instagramSession, times(1)).setAccessToken(any());
+        verify(this.instagramSession, times(0)).setAccountId(any());
+    }
+
+    @Test(expected = InstagramBadRequestException.class)
     public void authenticate_shouldThrowException_whenCallGetAccessToken() throws JsonProcessingException, InstagramException {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
                 .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
@@ -163,9 +176,30 @@ public class InstagramServiceTest {
         verify(this.instagramSession, times(0)).setAccountId(any());
     }
 
+    @Test(expected = InstagramException.class)
+    public void authenticate_shouldThrowInstagramException_whenCallGetAccessToken() throws JsonProcessingException, InstagramException {
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
+                .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
+        when(this.objectMapper.readValue(anyString(), eq(AccessTokenResponse.class))).thenReturn(accessTokenResponse());
+
+        this.instagramService.authenticate();
+
+        verify(this.instagramSession, times(0)).setAccessToken(any());
+        verify(this.instagramSession, times(0)).setAccountId(any());
+    }
     @Test(expected = InstagramBadRequestException.class)
     public void post_shouldThrowInstagramBadRequestException_whenAccountIdIsNull() throws InstagramException {
         when(this.instagramSession.getAccountId()).thenReturn(null);
+
+        this.instagramService.post("imageUrl", "caption");
+    }
+
+    @Test(expected = InstagramBadRequestException.class)
+    public void post_shouldThrowInstagramBadRequestException_whenHttpClientException() throws InstagramException {
+        when(this.instagramSession.getAccountId()).thenReturn("accountId");
+        when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap()))
+                .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
 
         this.instagramService.post("imageUrl", "caption");
     }
@@ -174,7 +208,8 @@ public class InstagramServiceTest {
     public void post_shouldThrowInstagramException_whenHttpClientException() throws InstagramException {
         when(this.instagramSession.getAccountId()).thenReturn("accountId");
         when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
-        when(this.restTemplate.exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap())).thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap()))
+                .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
         this.instagramService.post("imageUrl", "caption");
     }
@@ -205,13 +240,27 @@ public class InstagramServiceTest {
         Assertions.assertThat(imageId).isEqualTo("imageId");
     }
 
-    @Test(expected = InstagramException.class)
-    public void post_shouldThrowInstagramException_whenHttpClientErrorOnPblishingImage() throws InstagramException {
+    @Test(expected = InstagramBadRequestException.class)
+    public void post_shouldThrowInstagramBadRequestException_whenHttpClientErrorOnPublishingImage() throws InstagramException {
         when(this.instagramSession.getAccountId()).thenReturn("accountId");
         when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap()))
                 .thenReturn(ResponseEntity.ok(ImageIdResponse.builder().id("containerId").build()))
                 .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
+
+        this.instagramService.post("imageUrl", "caption");
+
+        Mockito.verify(this.restTemplate, times(2))
+                .exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap());
+    }
+
+    @Test(expected = InstagramException.class)
+    public void post_shouldThrowInstagramException_whenHttpClientErrorOnPublishingImage() throws InstagramException {
+        when(this.instagramSession.getAccountId()).thenReturn("accountId");
+        when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap()))
+                .thenReturn(ResponseEntity.ok(ImageIdResponse.builder().id("containerId").build()))
+                .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
         this.instagramService.post("imageUrl", "caption");
 
