@@ -13,8 +13,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import static com.mastercloudapps.thesocialnetworkplanner.ff4jconfig.FeatureFlagsInitializer.FEATURE_POST_IMAGE_WITH_RESOURCE;
-
 @RestController
 @Validated
 @Log4j2
@@ -24,12 +22,9 @@ public class InstagramController {
     private final InstagramService instagramService;
     private final ResourceService resourceService;
 
-    private final FF4j ff4j;
-
-    public InstagramController(InstagramService instagramService, ResourceService resourceService, FF4j ff4j) {
+    public InstagramController(InstagramService instagramService, ResourceService resourceService) {
         this.instagramService = instagramService;
         this.resourceService = resourceService;
-        this.ff4j = ff4j;
     }
 
     @GetMapping("/login")
@@ -47,16 +42,9 @@ public class InstagramController {
     }
 
     @PostMapping("/image")
-    public ResponseEntity<String> post(@RequestParam(value = "imageUrl", required = false) String url,
-                                       @RequestParam("caption") String caption, @RequestParam(value = "image",
-            required = false) MultipartFile multipartFile) throws InstagramException {
-        String resourceUrl;
-
-        if (ff4j.check(FEATURE_POST_IMAGE_WITH_RESOURCE)) {
-            resourceUrl = this.resourceService.createImage(multipartFile);
-        } else {
-            resourceUrl = url;
-        }
+    public ResponseEntity<String> post(@RequestParam("caption") String caption,
+                                       @RequestParam(value = "image") MultipartFile multipartFile) throws InstagramException {
+        String resourceUrl = this.resourceService.createImage(multipartFile);
         return ResponseEntity.ok(this.instagramService.post(resourceUrl, caption));
     }
 
