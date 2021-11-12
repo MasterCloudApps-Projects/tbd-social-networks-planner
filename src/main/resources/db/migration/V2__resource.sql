@@ -8,7 +8,7 @@ CREATE TABLE public.resource
 );
 
 ALTER TABLE public.tweet
-ALTER COLUMN resource_url TYPE int8;
+ALTER COLUMN resource_url TYPE int8 USING (resource_url::bigint);
 
 ALTER TABLE public.tweet
 RENAME COLUMN resource_url TO resource_id;
