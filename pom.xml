@@ -13,7 +13,7 @@
 
     <groupId>com.mastercloudapps</groupId>
     <artifactId>the-social-network-planner</artifactId>
-    <version>0.4.0</version>
+    <version>0.4.1</version>
     <name>the-social-network-planner</name>
     <description>TFM Planner for posting in social network</description>
 
@@ -90,11 +90,6 @@
         </dependency>
 
         <!-- Tests -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
