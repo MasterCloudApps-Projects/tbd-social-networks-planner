@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import java.util.Date;
 
@@ -29,5 +30,6 @@ public class Resource {
     private Date deletedDate;
 
     @ManyToOne
+    @JoinColumn(name = "tweet_id")
     private Tweet tweet;
 }
