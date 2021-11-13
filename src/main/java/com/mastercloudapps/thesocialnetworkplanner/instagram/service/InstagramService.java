@@ -55,6 +55,10 @@ public class InstagramService {
 
     @Value("${instagram.getMediaInfo}")
     private String mediaInfoUrl;
+
+    @Value("${instagram.getAllMedia}")
+    private String allMedia;
+
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final InstagramSession instagramSession;
@@ -259,6 +263,28 @@ public class InstagramService {
             throw new InstagramException(ex.getMessage());
         }
     }
+
+    public InstagramMediaResponse getAllMedia() throws InstagramException {
+        this.checkAccountId();
+        Map<String, String> uriParams = new HashMap<>();
+        uriParams.put("accountId", this.instagramSession.getAccountId());
+        UriComponents builder = UriComponentsBuilder.fromHttpUrl(allMedia)
+                .queryParam("access_token", this.instagramSession.getAccessToken())
+                .build();
+        try {
+            log.info("Request to Facebook Business API: " + allMedia);
+            ResponseEntity<InstagramMediaResponse> instagramMediaResponse = this.restTemplate.exchange(builder.toUriString(),
+                    HttpMethod.GET, getEntity(null), InstagramMediaResponse.class, uriParams);
+            return instagramMediaResponse.getBody() != null ? instagramMediaResponse.getBody() : null;
+        } catch (HttpClientErrorException ex) {
+            log.error("Error getting [all-media]: " + ex.getMessage());
+            if (HttpStatus.BAD_REQUEST.equals(ex.getStatusCode())) {
+                throw new InstagramBadRequestException(ex.getMessage());
+            }
+            throw new InstagramException("Error getting [all-media]: " + ex.getMessage());
+        }
+    }
+
     private void checkAccountId() throws InstagramBadRequestException {
         if (this.instagramSession.getAccountId() == null) {
             throw new InstagramBadRequestException("No Instagram Business account");
