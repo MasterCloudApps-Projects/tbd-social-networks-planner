@@ -11,7 +11,7 @@ import org.assertj.core.api.UriAssert;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DeviceLoginResponse {
+public class InstagramDeviceLoginResponse {
 
     @JsonProperty("code")
     private String code;
