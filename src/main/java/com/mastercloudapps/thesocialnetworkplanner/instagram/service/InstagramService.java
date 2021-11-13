@@ -70,21 +70,22 @@ public class InstagramService {
         this.instagramSession = instagramSession;
     }
 
-    public DeviceLoginResponse login() throws InstagramException {
+    public InstagramDeviceLoginResponse login() throws InstagramException {
         DeviceLoginRequest deviceLoginRequest = DeviceLoginRequest.builder()
                 .accessToken(loginAccessToken)
                 .redirectUri(redirectUri)
                 .scope(scope)
                 .build();
-        DeviceLoginResponse deviceLoginResponse;
+        InstagramDeviceLoginResponse instagramDeviceLoginResponse;
 
         try {
-            ResponseEntity<DeviceLoginResponse> response = this.restTemplate.exchange(deviceLoginUrl, HttpMethod.POST, getEntity(deviceLoginRequest.toJsonString()), DeviceLoginResponse.class);
-            deviceLoginResponse = response.getBody();
+            log.info("Request to Facebook Business API: " + deviceLoginUrl);
+            ResponseEntity<InstagramDeviceLoginResponse> response = this.restTemplate.exchange(deviceLoginUrl, HttpMethod.POST, getEntity(deviceLoginRequest.toJsonString()), InstagramDeviceLoginResponse.class);
+            instagramDeviceLoginResponse = response.getBody();
 
-            if (deviceLoginResponse != null) {
-                this.instagramSession.setAuthCode(deviceLoginResponse.getCode());
-                return deviceLoginResponse;
+            if (instagramDeviceLoginResponse != null) {
+                this.instagramSession.setAuthCode(instagramDeviceLoginResponse.getCode());
+                return instagramDeviceLoginResponse;
             } else {
                 throw new InstagramException("Error logging into Facebook API");
             }
