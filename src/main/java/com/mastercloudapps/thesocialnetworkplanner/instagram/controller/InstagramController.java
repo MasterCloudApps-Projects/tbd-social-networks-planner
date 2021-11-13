@@ -50,7 +50,7 @@ public class InstagramController {
                 : "No Instagram Business Account to work with.");
     }
 
-    @PostMapping("/image")
+    @PostMapping("/post")
     public ResponseEntity<String> post(@RequestParam("caption") String caption,
                                        @RequestParam(value = "image") MultipartFile multipartFile) throws InstagramException {
         ResourceResponse resource = this.resourceService.createImage(multipartFile);
