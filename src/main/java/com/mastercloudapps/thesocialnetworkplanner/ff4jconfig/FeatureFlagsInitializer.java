@@ -22,7 +22,7 @@ public class FeatureFlagsInitializer {
             ff4j.createFeature(FEATURE_TWITTER, false);
         }
         if (!ff4j.exist(FEATURE_GET_POST_INFO)) {
-            ff4j.createFeature(FEATURE_TWITTER, false);
+            ff4j.createFeature(FEATURE_GET_POST_INFO, false);
         }
     }
 }
