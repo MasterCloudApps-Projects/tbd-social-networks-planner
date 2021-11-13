@@ -59,18 +59,12 @@ public class InstagramController {
 
     @GetMapping("/post/{id}")
     public ResponseEntity getPostInfo(@PathVariable("id") @NotNull String id) throws InstagramException {
-        if (ff4j.check(FEATURE_GET_POST_INFO)) {
             return ResponseEntity.ok(this.instagramService.getPostInfo(id));
-        }
-        return ResponseEntity.ok("TBD");
     }
 
     @GetMapping("/posts")
     public ResponseEntity getAllMedia() throws InstagramException {
-        if (ff4j.check(FEATURE_GET_POST_INFO)) {
             return ResponseEntity.ok(this.instagramService.getAllMedia());
-        }
-        return ResponseEntity.ok("TBD");
     }
 
     @ExceptionHandler(InstagramException.class)
