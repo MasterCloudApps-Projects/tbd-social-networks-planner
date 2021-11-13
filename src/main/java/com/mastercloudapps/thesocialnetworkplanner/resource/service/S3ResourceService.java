@@ -1,6 +1,7 @@
 package com.mastercloudapps.thesocialnetworkplanner.resource.service;
 
 import java.io.File;
+import java.util.Date;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -11,6 +12,9 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 
+import com.mastercloudapps.thesocialnetworkplanner.resource.model.Resource;
+import com.mastercloudapps.thesocialnetworkplanner.resource.model.ResourceResponse;
+import com.mastercloudapps.thesocialnetworkplanner.resource.repository.ResourceRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,6 +31,12 @@ public class S3ResourceService implements ResourceService {
     private String region;
 
     private AmazonS3 s3;
+
+    private final ResourceRepository resourceRepository;
+
+    public S3ResourceService(ResourceRepository resourceRepository) {
+        this.resourceRepository = resourceRepository;
+    }
 
     @PostConstruct
     public void initS3Client() {
@@ -47,7 +57,7 @@ public class S3ResourceService implements ResourceService {
     }
 
     @Override
-    public String createImage(MultipartFile multiPartFile) {
+    public ResourceResponse createImage(MultipartFile multiPartFile) {
         String fileName = "image_" + UUID.randomUUID() + "_" + multiPartFile.getOriginalFilename();
         File file = new File(System.getProperty("java.io.tmpdir") + "/" + fileName);
         try {
@@ -59,7 +69,8 @@ public class S3ResourceService implements ResourceService {
         por.setCannedAcl(CannedAccessControlList.PublicRead);
         this.s3.putObject(por);
         file.delete();
-        return this.buildUrl(fileName);
+        Resource resource = this.resourceRepository.save(Resource.builder().url(this.buildUrl(fileName)).creationDate(new Date()).build());
+        return ResourceResponse.builder().id(resource.getId()).url(resource.getUrl()).creationDate(resource.getCreationDate()).build();
     }
 
     @Override

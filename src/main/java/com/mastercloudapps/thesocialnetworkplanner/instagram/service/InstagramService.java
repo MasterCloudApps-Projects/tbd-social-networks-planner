@@ -7,6 +7,7 @@ import com.mastercloudapps.thesocialnetworkplanner.instagram.config.InstagramSes
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.*;
+import com.mastercloudapps.thesocialnetworkplanner.resource.model.ResourceResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -185,8 +186,8 @@ public class InstagramService {
         return null;
     }
 
-    public String post(String url, String caption) throws InstagramException {
-        String containerId = this.createContainer(url, caption);
+    public String post(ResourceResponse resource, String caption) throws InstagramException {
+        String containerId = this.createContainer(resource.getUrl(), caption);
         if (containerId == null) {
             throw new InstagramException("Cannot publish. Image container does not exist.");
         }

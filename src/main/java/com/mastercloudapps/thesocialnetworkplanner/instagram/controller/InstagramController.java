@@ -4,13 +4,19 @@ import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.Instagram
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.DeviceLoginResponse;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.service.InstagramService;
+import com.mastercloudapps.thesocialnetworkplanner.resource.model.ResourceResponse;
 import com.mastercloudapps.thesocialnetworkplanner.resource.service.ResourceService;
 import lombok.extern.log4j.Log4j2;
-import org.ff4j.FF4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -44,8 +50,8 @@ public class InstagramController {
     @PostMapping("/image")
     public ResponseEntity<String> post(@RequestParam("caption") String caption,
                                        @RequestParam(value = "image") MultipartFile multipartFile) throws InstagramException {
-        String resourceUrl = this.resourceService.createImage(multipartFile);
-        return ResponseEntity.ok(this.instagramService.post(resourceUrl, caption));
+        ResourceResponse resource = this.resourceService.createImage(multipartFile);
+        return ResponseEntity.ok(this.instagramService.post(resource, caption));
     }
 
     @ExceptionHandler(InstagramException.class)
