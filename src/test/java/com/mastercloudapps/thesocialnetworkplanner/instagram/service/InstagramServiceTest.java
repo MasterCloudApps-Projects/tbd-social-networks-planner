@@ -52,20 +52,21 @@ public class InstagramServiceTest {
         ReflectionTestUtils.setField(instagramService, "loginAccessToken", "loginAccessToken");
         ReflectionTestUtils.setField(instagramService, "imageContainerUrl", "https://graph.facebook.com/{accountId}/media");
         ReflectionTestUtils.setField(instagramService, "publishImage", "https://graph.facebook.com/{accountId}/media_publish");
-
+        ReflectionTestUtils.setField(instagramService, "mediaInfoUrl", "https://graph.facebook.com/v12.0/{mediaId}");
+        ReflectionTestUtils.setField(instagramService, "allMedia", "https://graph.facebook.com/v12.0/{accountId}/media");
     }
 
     @Test
     public void login_shouldReturnDeviceLoginResponse() throws InstagramException {
-        DeviceLoginResponse deviceLoginResponse = DeviceLoginResponse.builder()
+        InstagramDeviceLoginResponse instagramDeviceLoginResponse = InstagramDeviceLoginResponse.builder()
                 .code("code")
                 .userCode("userCode")
                 .verificationUri("verificationUri")
                 .build();
-        when(this.restTemplate.exchange(anyString(), any(), any(), eq(DeviceLoginResponse.class)))
-                .thenReturn(ResponseEntity.ok(deviceLoginResponse));
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramDeviceLoginResponse.class)))
+                .thenReturn(ResponseEntity.ok(instagramDeviceLoginResponse));
 
-        DeviceLoginResponse response = this.instagramService.login();
+        InstagramDeviceLoginResponse response = this.instagramService.login();
 
         verify(this.instagramSession, times(1)).setAuthCode(any());
 
@@ -76,7 +77,7 @@ public class InstagramServiceTest {
 
     @Test(expected = InstagramException.class)
     public void login_shouldReturnNullDeviceLoginResponse() throws InstagramException {
-        when(this.restTemplate.exchange(anyString(), any(), any(), eq(DeviceLoginResponse.class)))
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramDeviceLoginResponse.class)))
                 .thenReturn(ResponseEntity.ok(null));
 
         this.instagramService.login();
@@ -86,7 +87,7 @@ public class InstagramServiceTest {
 
     @Test(expected = InstagramBadRequestException.class)
     public void login_shouldThrowInstagramBadRequestException() throws InstagramException {
-        when(this.restTemplate.exchange(anyString(), any(), any(), eq(DeviceLoginResponse.class)))
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramDeviceLoginResponse.class)))
                 .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
 
         this.instagramService.login();
@@ -96,7 +97,7 @@ public class InstagramServiceTest {
 
     @Test(expected = InstagramException.class)
     public void login_shouldThrowInstagramException() throws InstagramException {
-        when(this.restTemplate.exchange(anyString(), any(), any(), eq(DeviceLoginResponse.class)))
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramDeviceLoginResponse.class)))
                 .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
         this.instagramService.login();
@@ -108,8 +109,8 @@ public class InstagramServiceTest {
     public void authenticate_shouldReturnAccountId() throws JsonProcessingException, InstagramException {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(ResponseEntity.ok("body"));
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class), anyMap())).thenReturn(ResponseEntity.ok("body"));
-        when(this.objectMapper.readValue(anyString(), eq(AccessTokenResponse.class))).thenReturn(accessTokenResponse());
-        when(this.objectMapper.readValue(anyString(), eq(PagesResponse.class))).thenReturn(pagesResponse());
+        when(this.objectMapper.readValue(anyString(), eq(InstagramAccessTokenResponse.class))).thenReturn(accessTokenResponse());
+        when(this.objectMapper.readValue(anyString(), eq(InstagramPagesResponse.class))).thenReturn(pagesResponse());
         when(this.objectMapper.readValue(anyString(), eq(InstagramBusinessAccountResponse.class)))
                 .thenReturn(instagramBusinessAccountResponse(InstagramBusinessAccount.builder().id("instagram_business_account_id").build()))
                 .thenReturn(instagramBusinessAccountResponse(null));
@@ -128,8 +129,8 @@ public class InstagramServiceTest {
     public void authenticate_shouldReturnNullAccountId() throws JsonProcessingException, InstagramException {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(ResponseEntity.ok("body"));
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class), anyMap())).thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
-        when(this.objectMapper.readValue(anyString(), eq(AccessTokenResponse.class))).thenReturn(accessTokenResponse());
-        when(this.objectMapper.readValue(anyString(), eq(PagesResponse.class))).thenReturn(pagesResponse());
+        when(this.objectMapper.readValue(anyString(), eq(InstagramAccessTokenResponse.class))).thenReturn(accessTokenResponse());
+        when(this.objectMapper.readValue(anyString(), eq(InstagramPagesResponse.class))).thenReturn(pagesResponse());
 
         String accountId = this.instagramService.authenticate();
 
@@ -144,7 +145,7 @@ public class InstagramServiceTest {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
                 .thenReturn(ResponseEntity.ok("body"))
                 .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
-        when(this.objectMapper.readValue(anyString(), eq(AccessTokenResponse.class))).thenReturn(accessTokenResponse());
+        when(this.objectMapper.readValue(anyString(), eq(InstagramAccessTokenResponse.class))).thenReturn(accessTokenResponse());
 
         this.instagramService.authenticate();
 
@@ -157,7 +158,7 @@ public class InstagramServiceTest {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
                 .thenReturn(ResponseEntity.ok("body"))
                 .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
-        when(this.objectMapper.readValue(anyString(), eq(AccessTokenResponse.class))).thenReturn(accessTokenResponse());
+        when(this.objectMapper.readValue(anyString(), eq(InstagramAccessTokenResponse.class))).thenReturn(accessTokenResponse());
 
         this.instagramService.authenticate();
 
@@ -169,7 +170,7 @@ public class InstagramServiceTest {
     public void authenticate_shouldThrowException_whenCallGetAccessToken() throws JsonProcessingException, InstagramException {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
                 .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
-        when(this.objectMapper.readValue(anyString(), eq(AccessTokenResponse.class))).thenReturn(accessTokenResponse());
+        when(this.objectMapper.readValue(anyString(), eq(InstagramAccessTokenResponse.class))).thenReturn(accessTokenResponse());
 
         this.instagramService.authenticate();
 
@@ -181,13 +182,14 @@ public class InstagramServiceTest {
     public void authenticate_shouldThrowInstagramException_whenCallGetAccessToken() throws JsonProcessingException, InstagramException {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
                 .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
-        when(this.objectMapper.readValue(anyString(), eq(AccessTokenResponse.class))).thenReturn(accessTokenResponse());
+        when(this.objectMapper.readValue(anyString(), eq(InstagramAccessTokenResponse.class))).thenReturn(accessTokenResponse());
 
         this.instagramService.authenticate();
 
         verify(this.instagramSession, times(0)).setAccessToken(any());
         verify(this.instagramSession, times(0)).setAccountId(any());
     }
+
     @Test(expected = InstagramBadRequestException.class)
     public void post_shouldThrowInstagramBadRequestException_whenAccountIdIsNull() throws InstagramException {
         when(this.instagramSession.getAccountId()).thenReturn(null);
@@ -199,7 +201,7 @@ public class InstagramServiceTest {
     public void post_shouldThrowInstagramBadRequestException_whenHttpClientException() throws InstagramException {
         when(this.instagramSession.getAccountId()).thenReturn("accountId");
         when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
-        when(this.restTemplate.exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap()))
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap()))
                 .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
 
         this.instagramService.post(resourceResponse(), "caption");
@@ -209,7 +211,7 @@ public class InstagramServiceTest {
     public void post_shouldThrowInstagramException_whenHttpClientException() throws InstagramException {
         when(this.instagramSession.getAccountId()).thenReturn("accountId");
         when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
-        when(this.restTemplate.exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap()))
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap()))
                 .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
         this.instagramService.post(resourceResponse(), "caption");
@@ -219,7 +221,7 @@ public class InstagramServiceTest {
     public void post_shouldThrowInstagramException_whenContainerIdIsNull() throws InstagramException {
         when(this.instagramSession.getAccountId()).thenReturn("accountId");
         when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
-        when(this.restTemplate.exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap()))
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap()))
                 .thenReturn(ResponseEntity.ok(null));
 
         this.instagramService.post(resourceResponse(), "caption");
@@ -229,14 +231,14 @@ public class InstagramServiceTest {
     public void post_shouldReturnIgPostId() throws InstagramException {
         when(this.instagramSession.getAccountId()).thenReturn("accountId");
         when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
-        when(this.restTemplate.exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap()))
-                .thenReturn(ResponseEntity.ok(ImageIdResponse.builder().id("containerId").build()))
-                .thenReturn(ResponseEntity.ok(ImageIdResponse.builder().id("imageId").build()));
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap()))
+                .thenReturn(ResponseEntity.ok(InstagramImageIdResponse.builder().id("containerId").build()))
+                .thenReturn(ResponseEntity.ok(InstagramImageIdResponse.builder().id("imageId").build()));
 
         String imageId = this.instagramService.post(resourceResponse(), "caption");
 
         Mockito.verify(this.restTemplate, times(2))
-                .exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap());
+                .exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap());
 
         Assertions.assertThat(imageId).isEqualTo("imageId");
     }
@@ -245,47 +247,155 @@ public class InstagramServiceTest {
     public void post_shouldThrowInstagramBadRequestException_whenHttpClientErrorOnPublishingImage() throws InstagramException {
         when(this.instagramSession.getAccountId()).thenReturn("accountId");
         when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
-        when(this.restTemplate.exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap()))
-                .thenReturn(ResponseEntity.ok(ImageIdResponse.builder().id("containerId").build()))
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap()))
+                .thenReturn(ResponseEntity.ok(InstagramImageIdResponse.builder().id("containerId").build()))
                 .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
 
         this.instagramService.post(resourceResponse(), "caption");
 
         Mockito.verify(this.restTemplate, times(2))
-                .exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap());
+                .exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap());
     }
 
     @Test(expected = InstagramException.class)
     public void post_shouldThrowInstagramException_whenHttpClientErrorOnPublishingImage() throws InstagramException {
         when(this.instagramSession.getAccountId()).thenReturn("accountId");
         when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
-        when(this.restTemplate.exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap()))
-                .thenReturn(ResponseEntity.ok(ImageIdResponse.builder().id("containerId").build()))
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap()))
+                .thenReturn(ResponseEntity.ok(InstagramImageIdResponse.builder().id("containerId").build()))
                 .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
         this.instagramService.post(resourceResponse(), "caption");
 
         Mockito.verify(this.restTemplate, times(2))
-                .exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap());
+                .exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap());
     }
 
     @Test
     public void post_shouldReturnNullImageId() throws InstagramException {
         when(this.instagramSession.getAccountId()).thenReturn("accountId");
         when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
-        when(this.restTemplate.exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap()))
-                .thenReturn(ResponseEntity.ok(ImageIdResponse.builder().id("containerId").build()))
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap()))
+                .thenReturn(ResponseEntity.ok(InstagramImageIdResponse.builder().id("containerId").build()))
                 .thenReturn(ResponseEntity.ok(null));
 
         String imageId = this.instagramService.post(resourceResponse(), "caption");
 
         Mockito.verify(this.restTemplate, times(2))
-                .exchange(anyString(), any(), any(), eq(ImageIdResponse.class), anyMap());
+                .exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap());
         Assertions.assertThat(imageId).isNull();
     }
 
-    private PagesResponse pagesResponse() {
-        return PagesResponse.builder()
+    @Test(expected = InstagramBadRequestException.class)
+    public void getPostInfo_shouldThrowInstagramBadRequestException_whenHttpClientException400BADREQUEST() throws InstagramException {
+        when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramPostInfoResponse.class), anyMap()))
+                .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
+
+        this.instagramService.getPostInfo("id");
+    }
+
+    @Test(expected = InstagramException.class)
+    public void getPostInfo_shouldThrowInstagramException_whenHttpClientExceptionOtherException() throws InstagramException {
+        when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramPostInfoResponse.class), anyMap()))
+                .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
+
+        this.instagramService.getPostInfo("id");
+    }
+
+    @Test
+    public void getPostInfo_shouldReturnNull() throws InstagramException {
+        when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramPostInfoResponse.class), anyMap()))
+                .thenReturn(ResponseEntity.ok(null));
+
+        InstagramPostInfoResponse response = this.instagramService.getPostInfo("id");
+        Assertions.assertThat(response).isNull();
+    }
+
+    @Test
+    public void getPostInfo_shouldReturnInformation() throws InstagramException {
+        InstagramPostInfoResponse instagramPostInfoResponse = InstagramPostInfoResponse.builder()
+                .caption("caption")
+                .likeCount(0)
+                .id("id")
+                .mediaType("IMAGE").build();
+        when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramPostInfoResponse.class), anyMap()))
+                .thenReturn(ResponseEntity.ok(instagramPostInfoResponse));
+
+        InstagramPostInfoResponse response = this.instagramService.getPostInfo("id");
+
+        Assertions.assertThat(response).isNotNull();
+        Assertions.assertThat(response.getId()).isEqualTo("id");
+        Assertions.assertThat(response.getLikeCount()).isEqualTo(0);
+        Assertions.assertThat(response.getMediaType()).isEqualTo("IMAGE");
+        Assertions.assertThat(response.getCaption()).isEqualTo("caption");
+    }
+
+    @Test(expected = InstagramBadRequestException.class)
+    public void getAllMedia_shouldThrowInstagramBadRequestException_whenAccountIdIsNull() throws InstagramException {
+        this.instagramService.getAllMedia();
+    }
+
+    @Test(expected = InstagramBadRequestException.class)
+    public void getAllMedia_shouldThrowInstagramBadRequestException_whenHttpClientException400BADREQUEST() throws InstagramException {
+        when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramPostInfoResponse.class), anyMap()))
+                .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
+
+        this.instagramService.getAllMedia();
+    }
+
+    @Test(expected = InstagramException.class)
+    public void getAllMedia_shouldThrowInstagramException_whenHttpClientExceptionOtherException() throws InstagramException {
+        when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramPostInfoResponse.class), anyMap()))
+                .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
+
+        this.instagramService.getAllMedia();
+    }
+
+    @Test
+    public void getAllMedia_shouldReturnNull() throws InstagramException {
+        when(this.instagramSession.getAccountId()).thenReturn("accountId");
+        when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramMediaResponse.class), anyMap()))
+                .thenReturn(ResponseEntity.ok(null));
+
+        InstagramMediaResponse response = this.instagramService.getAllMedia();
+        Assertions.assertThat(response).isNull();
+    }
+
+    @Test
+    public void getAllMedia_shouldReturnListOfMediaIds() throws InstagramException {
+        InstagramMediaResponse instagramMediaResponse = instagramMediaResponse();
+
+        when(this.instagramSession.getAccountId()).thenReturn("accountId");
+        when(this.instagramSession.getAccessToken()).thenReturn("accessToken");
+        when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramMediaResponse.class), anyMap()))
+                .thenReturn(ResponseEntity.ok(instagramMediaResponse));
+
+        InstagramMediaResponse response = this.instagramService.getAllMedia();
+
+        Assertions.assertThat(response).isNotNull();
+        Assertions.assertThat(response.getPostIds().size()).isEqualTo(2);
+        Assertions.assertThat(response.getPostIds().get(0).getId()).isEqualTo("postId");
+        Assertions.assertThat(response.getPostIds().get(1).getId()).isEqualTo("postId2");
+    }
+
+    private InstagramMediaResponse instagramMediaResponse() {
+        return InstagramMediaResponse.builder()
+                .postIds(List.of(
+                        InstagramImageIdResponse.builder()
+                                .id("postId").build(),
+                        InstagramImageIdResponse.builder()
+                                .id("postId2").build())).build();
+    }
+
+    private InstagramPagesResponse pagesResponse() {
+        return InstagramPagesResponse.builder()
                 .pages(List.of(
                         Page.builder()
                                 .id("page_id")
@@ -308,8 +418,8 @@ public class InstagramServiceTest {
         return new HttpClientErrorException(status, "text", null, null, null);
     }
 
-    private AccessTokenResponse accessTokenResponse() {
-        return AccessTokenResponse.builder()
+    private InstagramAccessTokenResponse accessTokenResponse() {
+        return InstagramAccessTokenResponse.builder()
                 .accessToken("accessToken")
                 .build();
     }
