@@ -6,12 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
-@NoArgsConstructor
+import java.util.List;
+
 @Data
 @Builder
-public class AccessTokenResponse {
-
-    @JsonProperty("access_token")
-    private String accessToken;
+@AllArgsConstructor
+@NoArgsConstructor
+public class InstagramPagesResponse {
+    @JsonProperty("data")
+    private List<Page> pages;
 }

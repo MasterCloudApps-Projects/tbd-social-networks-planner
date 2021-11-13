@@ -2,7 +2,7 @@ package com.mastercloudapps.thesocialnetworkplanner.instagram.controller;
 
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
-import com.mastercloudapps.thesocialnetworkplanner.instagram.model.DeviceLoginResponse;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramDeviceLoginResponse;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.service.InstagramService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,7 +36,7 @@ public class InstagramControllerIntegrationTest {
 
     @Test
     public void login_shouldReturn200OK() throws Exception {
-        when(this.instagramService.login()).thenReturn(DeviceLoginResponse.builder()
+        when(this.instagramService.login()).thenReturn(InstagramDeviceLoginResponse.builder()
                 .userCode("XXXXX")
                 .code("XXXXX")
                 .verificationUri("https://www.facebook.com/device")

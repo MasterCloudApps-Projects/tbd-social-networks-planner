@@ -1,7 +1,6 @@
 package com.mastercloudapps.thesocialnetworkplanner.instagram.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.config.InstagramSession;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramBadRequestException;
@@ -53,6 +52,12 @@ public class InstagramService {
     @Value("${instagram.publishImage}")
     private String publishImage;
 
+    @Value("${instagram.getMediaInfo}")
+    private String mediaInfoUrl;
+
+    @Value("${instagram.getAllMedia}")
+    private String allMedia;
+
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final InstagramSession instagramSession;
@@ -64,21 +69,22 @@ public class InstagramService {
         this.instagramSession = instagramSession;
     }
 
-    public DeviceLoginResponse login() throws InstagramException {
+    public InstagramDeviceLoginResponse login() throws InstagramException {
         DeviceLoginRequest deviceLoginRequest = DeviceLoginRequest.builder()
                 .accessToken(loginAccessToken)
                 .redirectUri(redirectUri)
                 .scope(scope)
                 .build();
-        DeviceLoginResponse deviceLoginResponse;
+        InstagramDeviceLoginResponse instagramDeviceLoginResponse;
 
         try {
-            ResponseEntity<DeviceLoginResponse> response = this.restTemplate.exchange(deviceLoginUrl, HttpMethod.POST, getEntity(deviceLoginRequest.toJsonString()), DeviceLoginResponse.class);
-            deviceLoginResponse = response.getBody();
+            log.info("Request to Facebook Business API: " + deviceLoginUrl);
+            ResponseEntity<InstagramDeviceLoginResponse> response = this.restTemplate.exchange(deviceLoginUrl, HttpMethod.POST, getEntity(deviceLoginRequest.toJsonString()), InstagramDeviceLoginResponse.class);
+            instagramDeviceLoginResponse = response.getBody();
 
-            if (deviceLoginResponse != null) {
-                this.instagramSession.setAuthCode(deviceLoginResponse.getCode());
-                return deviceLoginResponse;
+            if (instagramDeviceLoginResponse != null) {
+                this.instagramSession.setAuthCode(instagramDeviceLoginResponse.getCode());
+                return instagramDeviceLoginResponse;
             } else {
                 throw new InstagramException("Error logging into Facebook API");
             }
@@ -93,10 +99,10 @@ public class InstagramService {
     }
 
     public String authenticate() throws InstagramException {
-        PagesResponse pagesResponse = this.getPages();
+        InstagramPagesResponse instagramPagesResponse = this.getPages();
         List<String> igBusinessAccounts = new ArrayList<>();
-        if (pagesResponse != null) {
-            for (Page page : pagesResponse.getPages()) {
+        if (instagramPagesResponse != null) {
+            for (Page page : instagramPagesResponse.getPages()) {
                 try {
                     String igAccount = this.getInstagramBusinessAccount(page.getId());
                     if (igAccount != null) {
@@ -118,13 +124,14 @@ public class InstagramService {
                 .accessToken(loginAccessToken)
                 .build();
 
-        AccessTokenResponse accessTokenResponse;
+        InstagramAccessTokenResponse instagramAccessTokenResponse;
         try {
+            log.info("Request to Facebook Business API: " + accessTokenUrl);
             ResponseEntity<String> responseAccessToken = this.restTemplate.exchange(accessTokenUrl, HttpMethod.POST,
                     getEntity(accessTokenRequest.toJsonString()), String.class);
-            accessTokenResponse = objectMapper.readValue(responseAccessToken.getBody(), AccessTokenResponse.class);
-            if (accessTokenResponse != null) {
-                this.instagramSession.setAccessToken(accessTokenResponse.getAccessToken());
+            instagramAccessTokenResponse = objectMapper.readValue(responseAccessToken.getBody(), InstagramAccessTokenResponse.class);
+            if (instagramAccessTokenResponse != null) {
+                this.instagramSession.setAccessToken(instagramAccessTokenResponse.getAccessToken());
             }
         } catch (HttpClientErrorException ex) {
             log.error("Exception getting instagram [accessToken]: " + ex.getMessage());
@@ -137,16 +144,17 @@ public class InstagramService {
         }
     }
 
-    private PagesResponse getPages() throws InstagramException {
+    private InstagramPagesResponse getPages() throws InstagramException {
         this.getAccessToken();
         this.waitForFacebook();
-        PagesResponse pageResponse = null;
+        UriComponents builder = UriComponentsBuilder.fromHttpUrl(pagesUrl).queryParam("access_token",
+                instagramSession.getAccessToken()).build();
+        InstagramPagesResponse pageResponse = null;
         try {
-            UriComponents builder = UriComponentsBuilder.fromHttpUrl(pagesUrl).queryParam("access_token",
-                    instagramSession.getAccessToken()).build();
+            log.info("Request to Facebook Business API: " + pagesUrl);
             ResponseEntity<String> pagesResponse = this.restTemplate.exchange(builder.toUriString(), HttpMethod.GET,
                     getEntity(null), String.class);
-            pageResponse = objectMapper.readValue(pagesResponse.getBody(), PagesResponse.class);
+            pageResponse = objectMapper.readValue(pagesResponse.getBody(), InstagramPagesResponse.class);
         } catch (HttpClientErrorException ex) {
             log.error("Error getting [facebook-pages]: " + ex.getMessage());
             if (HttpStatus.BAD_REQUEST.equals(ex.getStatusCode())) {
@@ -167,6 +175,7 @@ public class InstagramService {
                 .queryParam("access_token", this.instagramSession.getAccessToken())
                 .build();
         try {
+            log.info("Request to Facebook Business API: " + instagramAccountUrl);
             ResponseEntity<String> instagramBusinessAccount = this.restTemplate.exchange(builder.toUriString(), HttpMethod.GET, getEntity(null), String.class, uriParams);
             if (instagramBusinessAccount.getBody() != null) {
                 InstagramBusinessAccountResponse instagramBusinessAccountResponse = objectMapper.readValue(instagramBusinessAccount.getBody(), InstagramBusinessAccountResponse.class);
@@ -205,8 +214,9 @@ public class InstagramService {
                 .queryParam("image_url", url)
                 .build();
         try {
-            ResponseEntity<ImageIdResponse> instagramBusinessAccount = this.restTemplate.exchange(builder.toUriString(),
-                    HttpMethod.POST, getEntity(null), ImageIdResponse.class, uriParams);
+            log.info("Request to Facebook Business API: " + imageContainerUrl);
+            ResponseEntity<InstagramImageIdResponse> instagramBusinessAccount = this.restTemplate.exchange(builder.toUriString(),
+                    HttpMethod.POST, getEntity(null), InstagramImageIdResponse.class, uriParams);
             return instagramBusinessAccount.getBody() != null ? instagramBusinessAccount.getBody().getId() : null;
         } catch (HttpClientErrorException ex) {
             log.error("Error getting [image-container]: " + ex.getMessage());
@@ -226,8 +236,9 @@ public class InstagramService {
                 .queryParam("creation_id", imageContainerId)
                 .build();
         try {
-            ResponseEntity<ImageIdResponse> instagramBusinessAccount = this.restTemplate.exchange(builder.toUriString(),
-                    HttpMethod.POST, getEntity(null), ImageIdResponse.class, uriParams);
+            log.info("Request to Facebook Business API: " + publishImage);
+            ResponseEntity<InstagramImageIdResponse> instagramBusinessAccount = this.restTemplate.exchange(builder.toUriString(),
+                    HttpMethod.POST, getEntity(null), InstagramImageIdResponse.class, uriParams);
             return instagramBusinessAccount.getBody() != null ? instagramBusinessAccount.getBody().getId() : null;
         } catch (HttpClientErrorException ex) {
             log.error("Error getting [publish-image]: " + ex.getMessage());
@@ -235,6 +246,47 @@ public class InstagramService {
                 throw new InstagramBadRequestException(ex.getMessage());
             }
             throw new InstagramException("Error getting [publish-image]: " + ex.getMessage());
+        }
+    }
+
+    public InstagramPostInfoResponse getPostInfo(String id) throws InstagramException {
+        Map<String, String> uriParams = new HashMap<>();
+        uriParams.put("mediaId", id);
+        UriComponents builder = UriComponentsBuilder.fromHttpUrl(mediaInfoUrl)
+                .queryParam("access_token", this.instagramSession.getAccessToken())
+                .build();
+        try {
+            log.info("Request to Facebook Business API: " + mediaInfoUrl);
+            ResponseEntity<InstagramPostInfoResponse> postInfoResponseResponse = this.restTemplate.exchange(builder.toUriString(),
+                    HttpMethod.GET, getEntity(null), InstagramPostInfoResponse.class, uriParams);
+            return postInfoResponseResponse.getBody() != null ? postInfoResponseResponse.getBody() : null;
+        } catch (HttpClientErrorException ex) {
+            log.error("Error getting [image-container]: " + ex.getMessage());
+            if (HttpStatus.BAD_REQUEST.equals(ex.getStatusCode())) {
+                throw new InstagramBadRequestException("Error getting info for postId: " + id + ", Error: " +ex.getMessage());
+            }
+            throw new InstagramException(ex.getMessage());
+        }
+    }
+
+    public InstagramMediaResponse getAllMedia() throws InstagramException {
+        this.checkAccountId();
+        Map<String, String> uriParams = new HashMap<>();
+        uriParams.put("accountId", this.instagramSession.getAccountId());
+        UriComponents builder = UriComponentsBuilder.fromHttpUrl(allMedia)
+                .queryParam("access_token", this.instagramSession.getAccessToken())
+                .build();
+        try {
+            log.info("Request to Facebook Business API: " + allMedia);
+            ResponseEntity<InstagramMediaResponse> instagramMediaResponse = this.restTemplate.exchange(builder.toUriString(),
+                    HttpMethod.GET, getEntity(null), InstagramMediaResponse.class, uriParams);
+            return instagramMediaResponse.getBody() != null ? instagramMediaResponse.getBody() : null;
+        } catch (HttpClientErrorException ex) {
+            log.error("Error getting [all-media]: " + ex.getMessage());
+            if (HttpStatus.BAD_REQUEST.equals(ex.getStatusCode())) {
+                throw new InstagramBadRequestException(ex.getMessage());
+            }
+            throw new InstagramException("Error getting [all-media]: " + ex.getMessage());
         }
     }
 
