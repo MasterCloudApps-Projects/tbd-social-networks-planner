@@ -53,6 +53,8 @@ public class InstagramService {
     @Value("${instagram.publishImage}")
     private String publishImage;
 
+    @Value("${instagram.getMediaInfo}")
+    private String mediaInfoUrl;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final InstagramSession instagramSession;
@@ -238,6 +240,25 @@ public class InstagramService {
         }
     }
 
+    public InstagramPostInfoResponse getPostInfo(String id) throws InstagramException {
+        Map<String, String> uriParams = new HashMap<>();
+        uriParams.put("mediaId", id);
+        UriComponents builder = UriComponentsBuilder.fromHttpUrl(mediaInfoUrl)
+                .queryParam("access_token", this.instagramSession.getAccessToken())
+                .build();
+        try {
+            log.info("Request to Facebook Business API: " + mediaInfoUrl);
+            ResponseEntity<InstagramPostInfoResponse> postInfoResponseResponse = this.restTemplate.exchange(builder.toUriString(),
+                    HttpMethod.GET, getEntity(null), InstagramPostInfoResponse.class, uriParams);
+            return postInfoResponseResponse.getBody() != null ? postInfoResponseResponse.getBody() : null;
+        } catch (HttpClientErrorException ex) {
+            log.error("Error getting [image-container]: " + ex.getMessage());
+            if (HttpStatus.BAD_REQUEST.equals(ex.getStatusCode())) {
+                throw new InstagramBadRequestException("Error getting info for postId: " + id + ", Error: " +ex.getMessage());
+            }
+            throw new InstagramException(ex.getMessage());
+        }
+    }
     private void checkAccountId() throws InstagramBadRequestException {
         if (this.instagramSession.getAccountId() == null) {
             throw new InstagramBadRequestException("No Instagram Business account");
