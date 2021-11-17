@@ -1,5 +1,6 @@
 package com.mastercloudapps.thesocialnetworkplanner.resource.model;
 
+import com.mastercloudapps.thesocialnetworkplanner.instagram.model.Instagram;
 import com.mastercloudapps.thesocialnetworkplanner.twitter.model.Tweet;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,4 +33,8 @@ public class Resource {
     @ManyToOne
     @JoinColumn(name = "tweet_id")
     private Tweet tweet;
+
+    @ManyToOne
+    @JoinColumn(name = "instagram_id")
+    private Instagram instagram;
 }
