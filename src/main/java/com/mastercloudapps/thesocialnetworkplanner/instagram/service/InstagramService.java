@@ -2,12 +2,14 @@ package com.mastercloudapps.thesocialnetworkplanner.instagram.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.client.InstagramRestClient;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.config.InstagramSession;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.*;
 import com.mastercloudapps.thesocialnetworkplanner.resource.model.ResourceResponse;
 import lombok.extern.log4j.Log4j2;
+import org.ff4j.FF4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.mastercloudapps.thesocialnetworkplanner.ff4jconfig.FeatureFlagsInitializer.FEATURE_ABSTRACT_IG_CLIENT;
 
 @Service
 @Log4j2
@@ -61,60 +65,71 @@ public class InstagramService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final InstagramSession instagramSession;
+    private final InstagramRestClient instagramRestClient;
+    private final FF4j ff4j;
 
-
-    public InstagramService(RestTemplate restTemplate, ObjectMapper objectMapper, InstagramSession instagramSession) {
+    public InstagramService(RestTemplate restTemplate, ObjectMapper objectMapper, InstagramSession instagramSession, InstagramRestClient instagramRestClient, FF4j ff4j) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.instagramSession = instagramSession;
+        this.instagramRestClient = instagramRestClient;
+        this.ff4j = ff4j;
     }
 
     public InstagramDeviceLoginResponse login() throws InstagramException {
-        DeviceLoginRequest deviceLoginRequest = DeviceLoginRequest.builder()
-                .accessToken(loginAccessToken)
-                .redirectUri(redirectUri)
-                .scope(scope)
-                .build();
-        InstagramDeviceLoginResponse instagramDeviceLoginResponse;
+        if (ff4j.check(FEATURE_ABSTRACT_IG_CLIENT)) {
+            return this.instagramRestClient.login();
+        } else {
+            DeviceLoginRequest deviceLoginRequest = DeviceLoginRequest.builder()
+                    .accessToken(loginAccessToken)
+                    .redirectUri(redirectUri)
+                    .scope(scope)
+                    .build();
+            InstagramDeviceLoginResponse instagramDeviceLoginResponse;
 
-        try {
-            log.info("Request to Facebook Business API: " + deviceLoginUrl);
-            ResponseEntity<InstagramDeviceLoginResponse> response = this.restTemplate.exchange(deviceLoginUrl, HttpMethod.POST, getEntity(deviceLoginRequest.toJsonString()), InstagramDeviceLoginResponse.class);
-            instagramDeviceLoginResponse = response.getBody();
+            try {
+                log.info("Request to Facebook Business API: " + deviceLoginUrl);
+                ResponseEntity<InstagramDeviceLoginResponse> response = this.restTemplate.exchange(deviceLoginUrl, HttpMethod.POST, getEntity(deviceLoginRequest.toJsonString()), InstagramDeviceLoginResponse.class);
+                instagramDeviceLoginResponse = response.getBody();
 
-            if (instagramDeviceLoginResponse != null) {
-                this.instagramSession.setAuthCode(instagramDeviceLoginResponse.getCode());
-                return instagramDeviceLoginResponse;
-            } else {
-                throw new InstagramException("Error logging into Facebook API");
-            }
-        } catch (HttpClientErrorException ex) {
-            log.error("Exception on [deviceLogin]: " + ex.getMessage());
-            if (ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
-                throw new InstagramBadRequestException("Error login: " + ex.getMessage());
-            } else {
-                throw new InstagramException(ex.getMessage());
+                if (instagramDeviceLoginResponse != null) {
+                    this.instagramSession.setAuthCode(instagramDeviceLoginResponse.getCode());
+                    return instagramDeviceLoginResponse;
+                } else {
+                    throw new InstagramException("Error logging into Facebook API");
+                }
+            } catch (HttpClientErrorException ex) {
+                log.error("Exception on [deviceLogin]: " + ex.getMessage());
+                if (ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
+                    throw new InstagramBadRequestException("Error login: " + ex.getMessage());
+                } else {
+                    throw new InstagramException(ex.getMessage());
+                }
             }
         }
     }
 
     public String authenticate() throws InstagramException {
-        InstagramPagesResponse instagramPagesResponse = this.getPages();
-        List<String> igBusinessAccounts = new ArrayList<>();
-        if (instagramPagesResponse != null) {
-            for (Page page : instagramPagesResponse.getPages()) {
-                try {
-                    String igAccount = this.getInstagramBusinessAccount(page.getId());
-                    if (igAccount != null) {
-                        igBusinessAccounts.add(igAccount);
+        if (ff4j.check(FEATURE_ABSTRACT_IG_CLIENT)) {
+            return this.instagramRestClient.authenticate();
+        } else {
+            InstagramPagesResponse instagramPagesResponse = this.getPages();
+            List<String> igBusinessAccounts = new ArrayList<>();
+            if (instagramPagesResponse != null) {
+                for (Page page : instagramPagesResponse.getPages()) {
+                    try {
+                        String igAccount = this.getInstagramBusinessAccount(page.getId());
+                        if (igAccount != null) {
+                            igBusinessAccounts.add(igAccount);
+                        }
+                    } catch (Exception ex) {
+                        log.warn("Exception getting instagram account. " + ex.getMessage());
                     }
-                } catch (Exception ex) {
-                    log.warn("Exception getting instagram account. " + ex.getMessage());
                 }
+                this.instagramSession.setAccountId(igBusinessAccounts.stream().findFirst().orElse(null));
             }
-            this.instagramSession.setAccountId(igBusinessAccounts.stream().findFirst().orElse(null));
+            return this.instagramSession.getAccountId();
         }
-        return this.instagramSession.getAccountId();
     }
 
     private void getAccessToken() throws InstagramException {
@@ -196,12 +211,16 @@ public class InstagramService {
     }
 
     public String post(ResourceResponse resource, String caption) throws InstagramException {
-        String containerId = this.createContainer(resource.getUrl(), caption);
-        if (containerId == null) {
-            throw new InstagramException("Cannot publish. Image container does not exist.");
+        if (ff4j.check(FEATURE_ABSTRACT_IG_CLIENT)) {
+            return this.instagramRestClient.post(resource, caption);
+        } else {
+            String containerId = this.createContainer(resource.getUrl(), caption);
+            if (containerId == null) {
+                throw new InstagramException("Cannot publish. Image container does not exist.");
+            }
+            this.waitForFacebook();
+            return this.publishImage(containerId);
         }
-        this.waitForFacebook();
-        return this.publishImage(containerId);
     }
 
     private String createContainer(String url, String caption) throws InstagramException {
@@ -250,43 +269,51 @@ public class InstagramService {
     }
 
     public InstagramPostInfoResponse getPostInfo(String id) throws InstagramException {
-        Map<String, String> uriParams = new HashMap<>();
-        uriParams.put("mediaId", id);
-        UriComponents builder = UriComponentsBuilder.fromHttpUrl(mediaInfoUrl)
-                .queryParam("access_token", this.instagramSession.getAccessToken())
-                .build();
-        try {
-            log.info("Request to Facebook Business API: " + mediaInfoUrl);
-            ResponseEntity<InstagramPostInfoResponse> postInfoResponseResponse = this.restTemplate.exchange(builder.toUriString(),
-                    HttpMethod.GET, getEntity(null), InstagramPostInfoResponse.class, uriParams);
-            return postInfoResponseResponse.getBody() != null ? postInfoResponseResponse.getBody() : null;
-        } catch (HttpClientErrorException ex) {
-            log.error("Error getting [image-container]: " + ex.getMessage());
-            if (HttpStatus.BAD_REQUEST.equals(ex.getStatusCode())) {
-                throw new InstagramBadRequestException("Error getting info for postId: " + id + ", Error: " +ex.getMessage());
+        if (ff4j.check(FEATURE_ABSTRACT_IG_CLIENT)) {
+            return this.instagramRestClient.getPostInfo(id);
+        } else {
+            Map<String, String> uriParams = new HashMap<>();
+            uriParams.put("mediaId", id);
+            UriComponents builder = UriComponentsBuilder.fromHttpUrl(mediaInfoUrl)
+                    .queryParam("access_token", this.instagramSession.getAccessToken())
+                    .build();
+            try {
+                log.info("Request to Facebook Business API: " + mediaInfoUrl);
+                ResponseEntity<InstagramPostInfoResponse> postInfoResponseResponse = this.restTemplate.exchange(builder.toUriString(),
+                        HttpMethod.GET, getEntity(null), InstagramPostInfoResponse.class, uriParams);
+                return postInfoResponseResponse.getBody() != null ? postInfoResponseResponse.getBody() : null;
+            } catch (HttpClientErrorException ex) {
+                log.error("Error getting [image-container]: " + ex.getMessage());
+                if (HttpStatus.BAD_REQUEST.equals(ex.getStatusCode())) {
+                    throw new InstagramBadRequestException("Error getting info for postId: " + id + ", Error: " + ex.getMessage());
+                }
+                throw new InstagramException(ex.getMessage());
             }
-            throw new InstagramException(ex.getMessage());
         }
     }
 
     public InstagramMediaResponse getAllMedia() throws InstagramException {
-        this.checkAccountId();
-        Map<String, String> uriParams = new HashMap<>();
-        uriParams.put("accountId", this.instagramSession.getAccountId());
-        UriComponents builder = UriComponentsBuilder.fromHttpUrl(allMedia)
-                .queryParam("access_token", this.instagramSession.getAccessToken())
-                .build();
-        try {
-            log.info("Request to Facebook Business API: " + allMedia);
-            ResponseEntity<InstagramMediaResponse> instagramMediaResponse = this.restTemplate.exchange(builder.toUriString(),
-                    HttpMethod.GET, getEntity(null), InstagramMediaResponse.class, uriParams);
-            return instagramMediaResponse.getBody() != null ? instagramMediaResponse.getBody() : null;
-        } catch (HttpClientErrorException ex) {
-            log.error("Error getting [all-media]: " + ex.getMessage());
-            if (HttpStatus.BAD_REQUEST.equals(ex.getStatusCode())) {
-                throw new InstagramBadRequestException(ex.getMessage());
+        if (ff4j.check(FEATURE_ABSTRACT_IG_CLIENT)) {
+            return this.instagramRestClient.getAllMedia();
+        } else {
+            this.checkAccountId();
+            Map<String, String> uriParams = new HashMap<>();
+            uriParams.put("accountId", this.instagramSession.getAccountId());
+            UriComponents builder = UriComponentsBuilder.fromHttpUrl(allMedia)
+                    .queryParam("access_token", this.instagramSession.getAccessToken())
+                    .build();
+            try {
+                log.info("Request to Facebook Business API: " + allMedia);
+                ResponseEntity<InstagramMediaResponse> instagramMediaResponse = this.restTemplate.exchange(builder.toUriString(),
+                        HttpMethod.GET, getEntity(null), InstagramMediaResponse.class, uriParams);
+                return instagramMediaResponse.getBody() != null ? instagramMediaResponse.getBody() : null;
+            } catch (HttpClientErrorException ex) {
+                log.error("Error getting [all-media]: " + ex.getMessage());
+                if (HttpStatus.BAD_REQUEST.equals(ex.getStatusCode())) {
+                    throw new InstagramBadRequestException(ex.getMessage());
+                }
+                throw new InstagramException("Error getting [all-media]: " + ex.getMessage());
             }
-            throw new InstagramException("Error getting [all-media]: " + ex.getMessage());
         }
     }
 
