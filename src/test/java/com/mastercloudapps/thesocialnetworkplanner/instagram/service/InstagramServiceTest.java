@@ -2,12 +2,14 @@ package com.mastercloudapps.thesocialnetworkplanner.instagram.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.client.InstagramRestClient;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.config.InstagramSession;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.*;
 import com.mastercloudapps.thesocialnetworkplanner.resource.model.ResourceResponse;
 import org.assertj.core.api.Assertions;
+import org.ff4j.FF4j;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,11 +39,17 @@ public class InstagramServiceTest {
     @Mock
     private InstagramSession instagramSession;
 
+    @Mock
+    private FF4j ff4j;
+
+    @Mock
+    private InstagramRestClient instagramRestClient;
+
     private InstagramService instagramService;
 
     @Before
     public void before() {
-        this.instagramService = new InstagramService(this.restTemplate, this.objectMapper, this.instagramSession);
+        this.instagramService = new InstagramService(this.restTemplate, this.objectMapper, this.instagramSession, instagramRestClient, ff4j);
 
         ReflectionTestUtils.setField(instagramService, "deviceLoginUrl", "https://graph.facebook.com/v2.6/device/login");
         ReflectionTestUtils.setField(instagramService, "accessTokenUrl", "https://graph.facebook.com/v2.6/device/login_status");
@@ -54,6 +62,7 @@ public class InstagramServiceTest {
         ReflectionTestUtils.setField(instagramService, "publishImage", "https://graph.facebook.com/{accountId}/media_publish");
         ReflectionTestUtils.setField(instagramService, "mediaInfoUrl", "https://graph.facebook.com/v12.0/{mediaId}");
         ReflectionTestUtils.setField(instagramService, "allMedia", "https://graph.facebook.com/v12.0/{accountId}/media");
+        when(this.ff4j.check(anyString())).thenReturn(false);
     }
 
     @Test
