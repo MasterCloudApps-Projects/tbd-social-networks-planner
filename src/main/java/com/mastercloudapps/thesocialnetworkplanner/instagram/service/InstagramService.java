@@ -31,8 +31,8 @@ public class InstagramService {
         }
     }
 
-    public String authenticate() throws InstagramException {
-        String accountId = this.instagramRestClient.authenticate();
+    public String getAccount() throws InstagramException {
+        String accountId = this.instagramRestClient.getAccount();
         if (accountId == null) {
             throw new InstagramNotAuthorizeException();
         }

@@ -9,7 +9,7 @@ import com.mastercloudapps.thesocialnetworkplanner.resource.model.ResourceRespon
 public interface InstagramClient {
     InstagramDeviceLoginResponse login() throws InstagramException;
 
-    String authenticate() throws InstagramException;
+    String getAccount() throws InstagramException;
 
     String post(ResourceResponse resource, String caption) throws InstagramException;
 

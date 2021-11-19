@@ -107,7 +107,7 @@ public class InstagramRestClientTest {
     }
 
     @Test
-    public void authenticate_shouldReturnAccountId() throws JsonProcessingException, InstagramException {
+    public void getAccount_shouldReturnAccountId() throws JsonProcessingException, InstagramException {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(ResponseEntity.ok("body"));
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class), anyMap())).thenReturn(ResponseEntity.ok("body"));
         when(this.objectMapper.readValue(anyString(), eq(InstagramAccessTokenResponse.class))).thenReturn(accessTokenResponse());
@@ -118,7 +118,7 @@ public class InstagramRestClientTest {
         when(this.instagramSession.getAccessToken()).thenReturn("access_token");
         when(this.instagramSession.getAccountId()).thenReturn("account_id");
 
-        String accountId = this.instagramRestClient.authenticate();
+        String accountId = this.instagramRestClient.getAccount();
 
         verify(this.instagramSession, times(1)).setAccessToken(any());
         verify(this.instagramSession, times(1)).setAccountId(any());
@@ -127,13 +127,13 @@ public class InstagramRestClientTest {
     }
 
     @Test
-    public void authenticate_shouldReturnNullAccountId() throws JsonProcessingException, InstagramException {
+    public void getAccount_shouldReturnNullAccountId() throws JsonProcessingException, InstagramException {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class))).thenReturn(ResponseEntity.ok("body"));
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class), anyMap())).thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
         when(this.objectMapper.readValue(anyString(), eq(InstagramAccessTokenResponse.class))).thenReturn(accessTokenResponse());
         when(this.objectMapper.readValue(anyString(), eq(InstagramPagesResponse.class))).thenReturn(pagesResponse());
 
-        String accountId = this.instagramRestClient.authenticate();
+        String accountId = this.instagramRestClient.getAccount();
 
         verify(this.instagramSession, times(1)).setAccessToken(any());
         verify(this.instagramSession, times(1)).setAccountId(any());
@@ -142,50 +142,50 @@ public class InstagramRestClientTest {
     }
 
     @Test(expected = InstagramBadRequestException.class)
-    public void authenticate_shouldThrowInstagramBadRequestException_whenCallGetPages() throws JsonProcessingException, InstagramException {
+    public void getAccount_shouldThrowInstagramBadRequestException_whenCallGetPages() throws JsonProcessingException, InstagramException {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
                 .thenReturn(ResponseEntity.ok("body"))
                 .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
         when(this.objectMapper.readValue(anyString(), eq(InstagramAccessTokenResponse.class))).thenReturn(accessTokenResponse());
 
-        this.instagramRestClient.authenticate();
+        this.instagramRestClient.getAccount();
 
         verify(this.instagramSession, times(1)).setAccessToken(any());
         verify(this.instagramSession, times(0)).setAccountId(any());
     }
 
     @Test(expected = InstagramException.class)
-    public void authenticate_shouldThrowInstagramException_whenCallGetPages() throws JsonProcessingException, InstagramException {
+    public void getAccount_shouldThrowInstagramException_whenCallGetPages() throws JsonProcessingException, InstagramException {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
                 .thenReturn(ResponseEntity.ok("body"))
                 .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
         when(this.objectMapper.readValue(anyString(), eq(InstagramAccessTokenResponse.class))).thenReturn(accessTokenResponse());
 
-        this.instagramRestClient.authenticate();
+        this.instagramRestClient.getAccount();
 
         verify(this.instagramSession, times(1)).setAccessToken(any());
         verify(this.instagramSession, times(0)).setAccountId(any());
     }
 
     @Test(expected = InstagramBadRequestException.class)
-    public void authenticate_shouldThrowException_whenCallGetAccessToken() throws JsonProcessingException, InstagramException {
+    public void getAccount_shouldThrowException_whenCallGetAccessToken() throws JsonProcessingException, InstagramException {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
                 .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
         when(this.objectMapper.readValue(anyString(), eq(InstagramAccessTokenResponse.class))).thenReturn(accessTokenResponse());
 
-        this.instagramRestClient.authenticate();
+        this.instagramRestClient.getAccount();
 
         verify(this.instagramSession, times(0)).setAccessToken(any());
         verify(this.instagramSession, times(0)).setAccountId(any());
     }
 
     @Test(expected = InstagramException.class)
-    public void authenticate_shouldThrowInstagramException_whenCallGetAccessToken() throws JsonProcessingException, InstagramException {
+    public void getAccount_shouldThrowInstagramException_whenCallGetAccessToken() throws JsonProcessingException, InstagramException {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(String.class)))
                 .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
         when(this.objectMapper.readValue(anyString(), eq(InstagramAccessTokenResponse.class))).thenReturn(accessTokenResponse());
 
-        this.instagramRestClient.authenticate();
+        this.instagramRestClient.getAccount();
 
         verify(this.instagramSession, times(0)).setAccessToken(any());
         verify(this.instagramSession, times(0)).setAccountId(any());
