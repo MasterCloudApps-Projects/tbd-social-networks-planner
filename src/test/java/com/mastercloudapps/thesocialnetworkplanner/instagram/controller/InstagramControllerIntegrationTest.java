@@ -2,7 +2,7 @@ package com.mastercloudapps.thesocialnetworkplanner.instagram.controller;
 
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
-import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramDeviceLoginResponse;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramNotAuthorizeException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramImageIdResponse;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramMediaResponse;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramPostInfoResponse;
@@ -43,7 +43,7 @@ public class InstagramControllerIntegrationTest {
 
     @Test
     public void login_shouldReturn200OK() throws Exception {
-        when(this.instagramService.login()).thenReturn("Enter this code XXXX on www.facebook.device.com");
+        when(this.instagramService.login()).thenReturn("Enter this code XXXXX on https://www.facebook.com/device");
 
         mockMvc.perform(get(BASE_URL + LOGIN))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
@@ -68,12 +68,12 @@ public class InstagramControllerIntegrationTest {
     }
 
     @Test
-    public void authenticate_shouldReturn200OK_noAccount() throws Exception {
-        when(this.instagramService.authenticate()).thenReturn(null);
+    public void authenticate_shouldReturn401UNAUTHORIZED_noAccount() throws Exception {
+        when(this.instagramService.authenticate()).thenThrow(new InstagramNotAuthorizeException());
 
         mockMvc.perform(get(BASE_URL + AUTHENTICATE))
-                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
-                .andExpect(jsonPath("$").value("No Instagram Business Account to work with."));
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError())
+                .andExpect(jsonPath("$").value("User not authenticated."));
     }
 
     @Test

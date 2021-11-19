@@ -75,14 +75,15 @@ public class InstagramRestClientTest {
         Assertions.assertThat(response.getVerificationUri()).isEqualTo("verificationUri");
     }
 
-    @Test(expected = InstagramException.class)
+    @Test
     public void login_shouldReturnNullDeviceLoginResponse() throws InstagramException {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramDeviceLoginResponse.class)))
                 .thenReturn(ResponseEntity.ok(null));
 
-        this.instagramRestClient.login();
+        InstagramDeviceLoginResponse response = this.instagramRestClient.login();
 
         verify(this.instagramSession, times(0)).setAuthCode(any());
+        Assertions.assertThat(response).isNull();
     }
 
     @Test(expected = InstagramBadRequestException.class)
