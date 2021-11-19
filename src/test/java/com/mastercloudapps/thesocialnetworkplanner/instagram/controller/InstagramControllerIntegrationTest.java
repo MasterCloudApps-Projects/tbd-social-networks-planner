@@ -74,7 +74,7 @@ public class InstagramControllerIntegrationTest {
 
         mockMvc.perform(get(BASE_URL + LOGIN_CALLBACK))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
-                .andExpect(jsonPath("$").value("Using Instagram Business Account: instagram_business_account_id"));
+                .andExpect(jsonPath("$.accountId").value("instagram_business_account_id"));
     }
 
     @Test

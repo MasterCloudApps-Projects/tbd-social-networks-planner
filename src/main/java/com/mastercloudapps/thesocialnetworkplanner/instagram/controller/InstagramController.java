@@ -3,7 +3,7 @@ package com.mastercloudapps.thesocialnetworkplanner.instagram.controller;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramNotAuthorizeException;
-import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramDeviceLoginResponse;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.model.*;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.service.InstagramService;
 import com.mastercloudapps.thesocialnetworkplanner.resource.model.ResourceResponse;
 import com.mastercloudapps.thesocialnetworkplanner.resource.service.ResourceService;
@@ -36,25 +36,25 @@ public class InstagramController {
     }
 
     @GetMapping("/login/callback/")
-    public ResponseEntity<String> callback() throws InstagramException {
+    public ResponseEntity<LoginCallbackResponse> callback() throws InstagramException {
         String accountId = this.instagramService.getAccount();
-        return ResponseEntity.ok("Using Instagram Business Account: " + accountId);
+        return ResponseEntity.ok(LoginCallbackResponse.builder().accountId(accountId).build());
     }
 
     @PostMapping("/post")
-    public ResponseEntity<String> post(@RequestParam("caption") String caption, @RequestParam(value = "image")
+    public ResponseEntity<PostResponse> post(@RequestParam("caption") String caption, @RequestParam(value = "image")
             MultipartFile multipartFile) throws InstagramException {
         ResourceResponse resource = this.resourceService.createImage(multipartFile);
-        return ResponseEntity.ok(this.instagramService.post(resource, caption));
+        return ResponseEntity.ok(PostResponse.builder().postId(this.instagramService.post(resource, caption)).build());
     }
 
     @GetMapping("/post/{id}")
-    public ResponseEntity getPostInfo(@PathVariable("id") @NotNull String id) throws InstagramException {
+    public ResponseEntity<InstagramPostInfoResponse> getPostInfo(@PathVariable("id") @NotNull String id) throws InstagramException {
         return ResponseEntity.ok(this.instagramService.getPostInfo(id));
     }
 
     @GetMapping("/posts")
-    public ResponseEntity getAllMedia() throws InstagramException {
+    public ResponseEntity<InstagramMediaResponse> getAllMedia() throws InstagramException {
         return ResponseEntity.ok(this.instagramService.getAllMedia());
     }
 
