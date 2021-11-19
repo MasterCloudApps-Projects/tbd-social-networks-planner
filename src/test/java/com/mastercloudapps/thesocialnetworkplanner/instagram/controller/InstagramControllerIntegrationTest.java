@@ -43,11 +43,7 @@ public class InstagramControllerIntegrationTest {
 
     @Test
     public void login_shouldReturn200OK() throws Exception {
-        when(this.instagramService.login()).thenReturn(InstagramDeviceLoginResponse.builder()
-                .userCode("XXXXX")
-                .code("XXXXX")
-                .verificationUri("https://www.facebook.com/device")
-                .build());
+        when(this.instagramService.login()).thenReturn("Enter this code XXXX on www.facebook.device.com");
 
         mockMvc.perform(get(BASE_URL + LOGIN))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
