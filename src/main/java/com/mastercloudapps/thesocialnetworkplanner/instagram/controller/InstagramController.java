@@ -2,6 +2,7 @@ package com.mastercloudapps.thesocialnetworkplanner.instagram.controller;
 
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramNotAuthorizeException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramDeviceLoginResponse;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.service.InstagramService;
 import com.mastercloudapps.thesocialnetworkplanner.resource.model.ResourceResponse;
@@ -31,21 +32,18 @@ public class InstagramController {
 
     @GetMapping("/login")
     public ResponseEntity<String> login() throws InstagramException {
-        InstagramDeviceLoginResponse instagramDeviceLoginResponse = this.instagramService.login();
-        return ResponseEntity.ok("Enter this code " + instagramDeviceLoginResponse.getUserCode() + " on " + instagramDeviceLoginResponse.getVerificationUri());
+        return ResponseEntity.ok(this.instagramService.login());
     }
 
     @GetMapping("/auth")
     public ResponseEntity<String> authenticate() throws InstagramException {
         String accountId = this.instagramService.authenticate();
-        return ResponseEntity.ok(accountId != null
-                ? "Using Instagram Business Account: " + this.instagramService.authenticate()
-                : "No Instagram Business Account to work with.");
+        return ResponseEntity.ok("Using Instagram Business Account: " + accountId);
     }
 
     @PostMapping("/post")
-    public ResponseEntity<String> post(@RequestParam("caption") String caption,
-                                       @RequestParam(value = "image") MultipartFile multipartFile) throws InstagramException {
+    public ResponseEntity<String> post(@RequestParam("caption") String caption, @RequestParam(value = "image")
+            MultipartFile multipartFile) throws InstagramException {
         ResourceResponse resource = this.resourceService.createImage(multipartFile);
         return ResponseEntity.ok(this.instagramService.post(resource, caption));
     }
@@ -70,5 +68,11 @@ public class InstagramController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<String> handleInstagramBadRequestException(InstagramBadRequestException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler({InstagramNotAuthorizeException.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<String> handleInstagramNotAuthorizeException(InstagramNotAuthorizeException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
     }
 }

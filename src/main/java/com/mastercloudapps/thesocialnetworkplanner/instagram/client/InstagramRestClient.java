@@ -84,9 +84,6 @@ public class InstagramRestClient implements InstagramClient {
 
             if (instagramDeviceLoginResponse != null) {
                 this.instagramSession.setAuthCode(instagramDeviceLoginResponse.getCode());
-                return instagramDeviceLoginResponse;
-            } else {
-                throw new InstagramException("Error logging into Facebook API");
             }
         } catch (HttpClientErrorException ex) {
             log.error("Exception on [deviceLogin]: " + ex.getMessage());
@@ -96,6 +93,7 @@ public class InstagramRestClient implements InstagramClient {
                 throw new InstagramException(ex.getMessage());
             }
         }
+        return instagramDeviceLoginResponse;
     }
 
     @Override

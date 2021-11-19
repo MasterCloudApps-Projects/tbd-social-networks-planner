@@ -2,6 +2,7 @@ package com.mastercloudapps.thesocialnetworkplanner.instagram.service;
 
 import com.mastercloudapps.thesocialnetworkplanner.instagram.client.InstagramRestClient;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramNotAuthorizeException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramDeviceLoginResponse;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramMediaResponse;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramPostInfoResponse;
@@ -20,12 +21,22 @@ public class InstagramService {
         this.instagramRestClient = instagramRestClient;
     }
 
-    public InstagramDeviceLoginResponse login() throws InstagramException {
-        return this.instagramRestClient.login();
+    public String login() throws InstagramException {
+        InstagramDeviceLoginResponse instagramDeviceLoginResponse = this.instagramRestClient.login();
+        if (instagramDeviceLoginResponse != null) {
+            return "Enter this code " + instagramDeviceLoginResponse.getUserCode() + " on "
+                    + instagramDeviceLoginResponse.getVerificationUri();
+        } else {
+            throw new InstagramException("Error getting authentication code.");
+        }
     }
 
     public String authenticate() throws InstagramException {
-        return this.instagramRestClient.authenticate();
+        String accountId = this.instagramRestClient.authenticate();
+        if (accountId == null) {
+            throw new InstagramNotAuthorizeException();
+        }
+        return accountId;
     }
 
     public String post(ResourceResponse resource, String caption) throws InstagramException {
