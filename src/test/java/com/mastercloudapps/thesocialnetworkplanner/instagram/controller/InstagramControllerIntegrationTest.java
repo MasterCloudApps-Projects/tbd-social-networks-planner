@@ -7,12 +7,16 @@ import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramImag
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramMediaResponse;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramPostInfoResponse;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.service.InstagramService;
+import com.mastercloudapps.thesocialnetworkplanner.resource.model.ResourceResponse;
+import com.mastercloudapps.thesocialnetworkplanner.resource.service.ResourceService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -20,8 +24,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @RunWith(SpringRunner.class)
@@ -35,9 +42,12 @@ public class InstagramControllerIntegrationTest {
     @MockBean
     private InstagramService instagramService;
 
+    @MockBean
+    private ResourceService resourceService;
+
     private static final String BASE_URL = "/instagram";
     private static final String LOGIN = "/login";
-    private static final String AUTHENTICATE = "/auth";
+    private static final String LOGIN_CALLBACK = "/login/callback/";
     private static final String POST = "/post";
     private static final String POSTS = "/posts";
 
@@ -59,36 +69,36 @@ public class InstagramControllerIntegrationTest {
     }
 
     @Test
-    public void authenticate_shouldReturn200OK() throws Exception {
-        when(this.instagramService.authenticate()).thenReturn("instagram_business_account_id");
+    public void callback_shouldReturn200OK() throws Exception {
+        when(this.instagramService.getAccount()).thenReturn("instagram_business_account_id");
 
-        mockMvc.perform(get(BASE_URL + AUTHENTICATE))
+        mockMvc.perform(get(BASE_URL + LOGIN_CALLBACK))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$").value("Using Instagram Business Account: instagram_business_account_id"));
     }
 
     @Test
-    public void authenticate_shouldReturn401UNAUTHORIZED_noAccount() throws Exception {
-        when(this.instagramService.authenticate()).thenThrow(new InstagramNotAuthorizeException());
+    public void callback_shouldReturn401UNAUTHORIZED_noAccount() throws Exception {
+        when(this.instagramService.getAccount()).thenThrow(new InstagramNotAuthorizeException());
 
-        mockMvc.perform(get(BASE_URL + AUTHENTICATE))
+        mockMvc.perform(get(BASE_URL + LOGIN_CALLBACK))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError())
                 .andExpect(jsonPath("$").value("User not authenticated."));
     }
 
     @Test
-    public void authenticate_shouldReturn500INTERNAL_SERVER_ERROR() throws Exception {
-        when(this.instagramService.authenticate()).thenThrow(new InstagramException());
+    public void callback_shouldReturn500INTERNAL_SERVER_ERROR() throws Exception {
+        when(this.instagramService.getAccount()).thenThrow(new InstagramException());
 
-        mockMvc.perform(get(BASE_URL + AUTHENTICATE))
+        mockMvc.perform(get(BASE_URL + LOGIN_CALLBACK))
                 .andExpect(MockMvcResultMatchers.status().is5xxServerError());
     }
 
     @Test
-    public void authenticate_shouldReturn400BAD_REQUEST() throws Exception {
-        when(this.instagramService.authenticate()).thenThrow(new InstagramBadRequestException("Error message"));
+    public void callback_shouldReturn400BAD_REQUEST() throws Exception {
+        when(this.instagramService.getAccount()).thenThrow(new InstagramBadRequestException("Error message"));
 
-        mockMvc.perform(get(BASE_URL + AUTHENTICATE))
+        mockMvc.perform(get(BASE_URL + LOGIN_CALLBACK))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError())
                 .andExpect(jsonPath("$").value("Error message"));
     }

@@ -35,9 +35,9 @@ public class InstagramController {
         return ResponseEntity.ok(this.instagramService.login());
     }
 
-    @GetMapping("/auth")
-    public ResponseEntity<String> authenticate() throws InstagramException {
-        String accountId = this.instagramService.authenticate();
+    @GetMapping("/login/callback/")
+    public ResponseEntity<String> callback() throws InstagramException {
+        String accountId = this.instagramService.getAccount();
         return ResponseEntity.ok("Using Instagram Business Account: " + accountId);
     }
 

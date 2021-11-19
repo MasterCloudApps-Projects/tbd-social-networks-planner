@@ -60,21 +60,21 @@ public class InstagramServiceTest {
     }
 
     @Test
-    public void authenticate_shouldReturnAccountId() throws InstagramException {
-        when(this.instagramRestClient.authenticate()).thenReturn("accountId");
-        String accountId = this.instagramService.authenticate();
+    public void getAccount_shouldReturnAccountId() throws InstagramException {
+        when(this.instagramRestClient.getAccount()).thenReturn("accountId");
+        String accountId = this.instagramService.getAccount();
 
         Assertions.assertThat(accountId).isEqualTo("accountId");
-        verify(this.instagramRestClient, times(1)).authenticate();
+        verify(this.instagramRestClient, times(1)).getAccount();
     }
 
     @Test(expected = InstagramNotAuthorizeException.class)
-    public void authenticate_shouldThrowInstagramNotAuthorizeException_whenAccountIdIsNull() throws InstagramException {
-        when(this.instagramRestClient.authenticate()).thenReturn(null);
-        String accountId = this.instagramService.authenticate();
+    public void getAccount_shouldThrowInstagramNotAuthorizeException_whenAccountIdIsNull() throws InstagramException {
+        when(this.instagramRestClient.getAccount()).thenReturn(null);
+        String accountId = this.instagramService.getAccount();
 
         Assertions.assertThat(accountId).isNull();
-        verify(this.instagramRestClient, times(1)).authenticate();
+        verify(this.instagramRestClient, times(1)).getAccount();
     }
 
     @Test

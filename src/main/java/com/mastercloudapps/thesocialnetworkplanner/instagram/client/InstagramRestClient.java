@@ -97,7 +97,7 @@ public class InstagramRestClient implements InstagramClient {
     }
 
     @Override
-    public String authenticate() throws InstagramException {
+    public String getAccount() throws InstagramException {
         this.getAccessToken();
         InstagramPagesResponse instagramPagesResponse = this.getPages();
         List<String> igBusinessAccounts = new ArrayList<>();
