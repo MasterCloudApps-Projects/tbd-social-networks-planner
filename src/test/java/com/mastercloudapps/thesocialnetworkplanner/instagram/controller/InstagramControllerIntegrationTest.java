@@ -25,7 +25,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -171,5 +170,61 @@ public class InstagramControllerIntegrationTest {
         mockMvc.perform(get(BASE_URL + POSTS))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError())
                 .andExpect(jsonPath("$").value("Error message"));
+    }
+
+    @Test
+    public void post_shouldReturnPostId() throws Exception {
+        when(this.resourceService.createImage(any())).thenReturn(ResourceResponse.builder().id(1234L).build());
+        when(this.instagramService.post(any(), any())).thenReturn("postId");
+
+        MockMultipartFile multipartFile = new MockMultipartFile("image", "image.jpeg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "Image for instagram".getBytes());
+
+        mockMvc.perform(multipart(BASE_URL + POST).file(multipartFile)
+                .param("caption", "New instagram post"))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+                .andExpect(jsonPath("$.postId").value("postId"));
+    }
+
+    @Test
+    public void post_shouldThrow400BADREQUEST_whenCaptionIsNull() throws Exception {
+        MockMultipartFile multipartFile = new MockMultipartFile("image", "image.jpeg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "Image for instagram".getBytes());
+
+        mockMvc.perform(multipart(BASE_URL + POST).file(multipartFile))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+    }
+
+    @Test
+    public void post_shouldThrow400BADREQUEST_whenImageIsNull() throws Exception {
+        MockMultipartFile multipartFile = new MockMultipartFile("file", "image.jpeg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "Image for instagram".getBytes());
+        mockMvc.perform(multipart(BASE_URL + POST).file(multipartFile).param("caption", "caption"))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+    }
+
+    @Test
+    public void post_shouldThrow500SERVERERROR() throws Exception {
+        when(this.instagramService.post(any(), any())).thenThrow(new InstagramException());
+        MockMultipartFile multipartFile = new MockMultipartFile("image", "image.jpeg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "Image for instagram".getBytes());
+        mockMvc.perform(multipart(BASE_URL + POST).file(multipartFile)
+                .param("caption", "caption"))
+                .andExpect(MockMvcResultMatchers.status().is5xxServerError());
+    }
+
+    @Test
+    public void post_shouldThrow400BADREQUEST() throws Exception {
+        when(this.instagramService.post(any(), any())).thenThrow(new InstagramBadRequestException("Bad request"));
+        MockMultipartFile multipartFile = new MockMultipartFile("image", "image.jpeg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "Image for instagram".getBytes());
+        mockMvc.perform(multipart(BASE_URL + POST).file(multipartFile)
+                .param("caption", "caption"))
+                .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 }

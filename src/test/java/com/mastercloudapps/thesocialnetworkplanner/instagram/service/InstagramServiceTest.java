@@ -3,7 +3,10 @@ package com.mastercloudapps.thesocialnetworkplanner.instagram.service;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.client.InstagramRestClient;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.instagram.exception.InstagramNotAuthorizeException;
-import com.mastercloudapps.thesocialnetworkplanner.instagram.model.*;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramDeviceLoginResponse;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramImageIdResponse;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramMediaResponse;
+import com.mastercloudapps.thesocialnetworkplanner.instagram.model.InstagramPostInfoResponse;
 import com.mastercloudapps.thesocialnetworkplanner.resource.model.ResourceResponse;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -81,7 +84,8 @@ public class InstagramServiceTest {
     public void post_shouldReturnPostId() throws InstagramException {
         when(this.instagramRestClient.post(any(), any()))
                 .thenReturn("postId");
-        String postId = this.instagramService.post(ResourceResponse.builder().id(123L).build(), "caption");
+        String postId = this.instagramService.post(ResourceResponse.builder().id(123L).build(),
+                "caption");
 
         Assertions.assertThat(postId).isEqualTo("postId");
         verify(this.instagramRestClient, times(1)).post(any(), anyString());
@@ -91,7 +95,8 @@ public class InstagramServiceTest {
     public void post_shouldReturnPostIdNull() throws InstagramException {
         when(this.instagramRestClient.post(any(), any()))
                 .thenReturn(null);
-        String postId = this.instagramService.post(ResourceResponse.builder().id(123L).build(), "caption");
+        String postId = this.instagramService.post(ResourceResponse.builder().id(123L).build(),
+                "caption");
 
         Assertions.assertThat(postId).isNull();
         verify(this.instagramRestClient, times(1)).post(any(), anyString());
@@ -101,7 +106,8 @@ public class InstagramServiceTest {
     public void post_shouldThrowInstagramException() throws InstagramException {
         when(this.instagramRestClient.post(any(), any()))
                 .thenThrow(new InstagramException());
-        this.instagramService.post(ResourceResponse.builder().id(123L).build(), "caption");
+        this.instagramService.post(ResourceResponse.builder().id(123L).build(),
+                "caption");
         verify(this.instagramRestClient, times(1)).post(any(), anyString());
     }
 
