@@ -10,7 +10,6 @@ import com.mastercloudapps.thesocialnetworkplanner.resource.model.ResourceRespon
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -85,9 +84,6 @@ public class InstagramRestClient implements InstagramClient {
 
             if (instagramDeviceLoginResponse != null) {
                 this.instagramSession.setAuthCode(instagramDeviceLoginResponse.getCode());
-                return instagramDeviceLoginResponse;
-            } else {
-                throw new InstagramException("Error logging into Facebook API");
             }
         } catch (HttpClientErrorException ex) {
             log.error("Exception on [deviceLogin]: " + ex.getMessage());
@@ -97,6 +93,7 @@ public class InstagramRestClient implements InstagramClient {
                 throw new InstagramException(ex.getMessage());
             }
         }
+        return instagramDeviceLoginResponse;
     }
 
     @Override
