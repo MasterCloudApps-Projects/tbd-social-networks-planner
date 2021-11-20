@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 @RestController
 @Validated
 @Log4j2
-@RequestMapping(value = "api/v1/instagram")
+@RequestMapping(value = "/api/v1/instagram")
 public class InstagramController {
 
     private final InstagramService instagramService;

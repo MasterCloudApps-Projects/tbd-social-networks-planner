@@ -44,7 +44,7 @@ public class InstagramControllerIntegrationTest {
     @MockBean
     private ResourceService resourceService;
 
-    private static final String BASE_URL = "api/v1/instagram";
+    private static final String BASE_URL = "/api/v1/instagram";
     private static final String LOGIN = "/login";
     private static final String LOGIN_CALLBACK = "/login/callback/";
     private static final String POST = "/post";
