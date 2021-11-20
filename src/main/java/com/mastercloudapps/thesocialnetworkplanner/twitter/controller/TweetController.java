@@ -58,10 +58,7 @@ public class TweetController {
 
     @PostMapping()
     public ResponseEntity<TweetResponse> postTweet(
-            @RequestParam("text")
-            @Size(max = 280)
-            @NotNull
-                    String text, @RequestParam(value = "image",
+            @RequestParam("text") @Size(max = 280) @NotNull String text, @RequestParam(value = "image",
             required = false) MultipartFile multipartFile) throws
             TwitterClientException, IOException {
         TweetResponse tweetResponse = this.twitterService.postTweet(text, multipartFile);
