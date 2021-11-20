@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Validated
-@RequestMapping(value = "api/v1/twitter/actions")
+@RequestMapping(value = "/api/v1/twitter/action")
 public class TwitterActionsController {
     private final TwitterService twitterService;
 

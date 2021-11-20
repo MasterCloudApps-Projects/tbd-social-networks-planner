@@ -11,7 +11,7 @@ import twitter4j.TwitterException;
 
 @RestController
 @Validated
-@RequestMapping(value = "api/v1/twitter/auth")
+@RequestMapping(value = "/api/v1/twitter/auth")
 public class TwitterAuthenticationController {
 
     private final TwitterAuthenticationService twitterAuthenticationService;

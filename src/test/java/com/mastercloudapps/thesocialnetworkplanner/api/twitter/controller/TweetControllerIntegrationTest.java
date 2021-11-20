@@ -43,7 +43,9 @@ public class TweetControllerIntegrationTest {
     @MockBean
     private TwitterService twitterService;
     private static final Long TWEET_ID = 1L;
-    private static final String BASE_URL = "api/v1/twitter/tweets";
+    private static final String BASE_URL = "/api/v1/twitter";
+    private static final String TWEET = "/tweet";
+    private static final String TWEETS = "/tweets";
     private static final String UNPUBLISHED_URL = "unpublished";
     private static final String SCHEDULE_URL = "schedule";
 
@@ -54,7 +56,7 @@ public class TweetControllerIntegrationTest {
                         TweetResponse.builder().id(TWEET_ID).username("andrea_juanma").text("This is a new tweet.").build(),
                         TweetResponse.builder().id(2L).username("jguijars").text("This is an old tweet.").build()));
 
-        mockMvc.perform(get(BASE_URL + "/"))
+        mockMvc.perform(get(BASE_URL + TWEETS))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$[0].username").value("andrea_juanma"))
                 .andExpect(jsonPath("$[0].id").value(TWEET_ID))
@@ -71,7 +73,7 @@ public class TweetControllerIntegrationTest {
                 .text("This is a new tweet.")
                 .build());
 
-        mockMvc.perform(get(BASE_URL + "/" + TWEET_ID))
+        mockMvc.perform(get(BASE_URL + TWEET + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
                 .andExpect(jsonPath("$.id").value(TWEET_ID))
@@ -82,13 +84,13 @@ public class TweetControllerIntegrationTest {
     public void getTweet_shouldThrowBadRequestException() throws Exception {
         when(this.twitterService.getTweet(any())).thenThrow(TwitterBadRequestException.class);
 
-        mockMvc.perform(get(BASE_URL + "/" + TWEET_ID))
+        mockMvc.perform(get(BASE_URL + TWEET + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 
     @Test
     public void postTweet_shouldReturnTweetInformation() throws Exception {
-        MockMultipartFile multipartFile = new MockMultipartFile ("image", "image.jpeg",
+        MockMultipartFile multipartFile = new MockMultipartFile("image", "image.jpeg",
                 MediaType.IMAGE_JPEG_VALUE,
                 "Image for tweet".getBytes());
         when(this.twitterService.postTweet(any(), any())).thenReturn(TweetResponse.builder()
@@ -97,7 +99,7 @@ public class TweetControllerIntegrationTest {
                 .text("This is a new tweet.")
                 .build());
 
-        mockMvc.perform(multipart(BASE_URL).file(multipartFile).param("text","New tweet"))
+        mockMvc.perform(multipart(BASE_URL + TWEET).file(multipartFile).param("text", "New tweet"))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
                 .andExpect(jsonPath("$.id").value(TWEET_ID))
@@ -106,12 +108,12 @@ public class TweetControllerIntegrationTest {
 
     @Test
     public void postTweet_shouldThrowTwitterBadRequestException() throws Exception {
-        MockMultipartFile multipartFile = new MockMultipartFile ("image", "image.jpeg",
+        MockMultipartFile multipartFile = new MockMultipartFile("image", "image.jpeg",
                 MediaType.IMAGE_JPEG_VALUE,
                 "Image for tweet".getBytes());
-        when(this.twitterService.postTweet(any(),any())).thenThrow(TwitterBadRequestException.class);
+        when(this.twitterService.postTweet(any(), any())).thenThrow(TwitterBadRequestException.class);
 
-        mockMvc.perform(multipart(BASE_URL).file(multipartFile).param("text", "New tweet!"))
+        mockMvc.perform(multipart(BASE_URL + TWEET).file(multipartFile).param("text", "New tweet!"))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 
@@ -123,7 +125,7 @@ public class TweetControllerIntegrationTest {
                 .text("This is a new tweet.")
                 .build());
 
-        mockMvc.perform(delete(BASE_URL + "/" + TWEET_ID))
+        mockMvc.perform(delete(BASE_URL + TWEET + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
                 .andExpect(jsonPath("$.id").value(TWEET_ID))
@@ -134,7 +136,7 @@ public class TweetControllerIntegrationTest {
     public void deleteTweet_shouldThrowBadRequestException() throws Exception {
         when(this.twitterService.deleteTweet(any())).thenThrow(TwitterBadRequestException.class);
 
-        mockMvc.perform(delete(BASE_URL + "/" + TWEET_ID))
+        mockMvc.perform(delete(BASE_URL + TWEET + "/" + TWEET_ID))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 
@@ -145,7 +147,7 @@ public class TweetControllerIntegrationTest {
                         TweetResponse.builder().id(TWEET_ID).username("andrea_juanma").text("This is a new tweet.").build(),
                         TweetResponse.builder().id(2L).username("jguijars").text("This is an old tweet.").build()));
 
-        mockMvc.perform(get(BASE_URL + "/" + UNPUBLISHED_URL))
+        mockMvc.perform(get(BASE_URL + TWEETS + "/" + UNPUBLISHED_URL))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$[0].username").value("andrea_juanma"))
                 .andExpect(jsonPath("$[0].id").value(TWEET_ID))
@@ -161,7 +163,7 @@ public class TweetControllerIntegrationTest {
 
         when(this.twitterService.scheduleTweet(any())).thenReturn(TweetResponse.builder().id(TWEET_ID).username("andrea_juanma").text("This is a new tweet.").build());
 
-        mockMvc.perform(post(BASE_URL + "/" + SCHEDULE_URL)
+        mockMvc.perform(post(BASE_URL + TWEET + "/" + SCHEDULE_URL)
                 .content(jsonRequest)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())

@@ -34,7 +34,7 @@ import java.util.List;
 
 @RestController
 @Validated
-@RequestMapping(value = "api/v1/twitter/tweets")
+@RequestMapping(value = "/api/v1/twitter")
 public class TweetController {
     private final TwitterService twitterService;
 
@@ -42,19 +42,19 @@ public class TweetController {
         this.twitterService = twitterService;
     }
 
-    @GetMapping()
+    @GetMapping("/tweets")
     public ResponseEntity<List<TweetResponse>> getAllTweets() {
         List<TweetResponse> tweetResponse = this.twitterService.getAllTweets();
         return ResponseEntity.ok(tweetResponse);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/tweet/{id}")
     public ResponseEntity<TweetResponse> getTweet(@PathVariable Long id) throws TwitterClientException {
         TweetResponse tweetResponse = this.twitterService.getTweet(id);
         return ResponseEntity.ok(tweetResponse);
     }
 
-    @PostMapping()
+    @PostMapping("/tweet")
     public ResponseEntity<TweetResponse> postTweet(
             @RequestParam("text") @Size(max = 280) @NotNull String text, @RequestParam(value = "image",
             required = false) MultipartFile multipartFile) throws
@@ -63,19 +63,19 @@ public class TweetController {
         return ResponseEntity.ok(tweetResponse);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/tweet/{id}")
     public ResponseEntity<TweetResponse> deleteTweet(@PathVariable Long id) throws TwitterClientException {
         TweetResponse tweetResponse = this.twitterService.deleteTweet(id);
         return ResponseEntity.ok(tweetResponse);
     }
 
-    @GetMapping("/unpublished")
+    @GetMapping("/tweets/unpublished")
     public ResponseEntity<List<TweetResponse>> getUnpublishedTweets() {
         List<TweetResponse> tweetResponse = this.twitterService.getUnpublishedTweets();
         return ResponseEntity.ok(tweetResponse);
     }
 
-    @PostMapping("/schedule")
+    @PostMapping("/tweet/schedule")
     public ResponseEntity<TweetResponse> scheduleTweet(@RequestBody @Valid ScheduleTweetRequest tweetRequest) throws ParseException, TwitterException {
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         tweetRequest.setPublishDateStore(formatter.parse(tweetRequest.getPublishDate()));

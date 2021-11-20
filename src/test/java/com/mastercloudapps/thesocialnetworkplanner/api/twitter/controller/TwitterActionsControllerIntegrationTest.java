@@ -37,7 +37,7 @@ public class TwitterActionsControllerIntegrationTest {
     private TwitterService twitterService;
 
     private static final Long TWEET_ID = 1L;
-    private static final String BASE_URL = "api/v1/twitter/actions";
+    private static final String BASE_URL = "/api/v1/twitter/action";
     private static final String RETWEET = "/retweet";
     private static final String LIKE = "/like";
     private static final String REPLY = "/reply";
