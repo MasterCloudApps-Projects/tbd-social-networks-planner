@@ -72,7 +72,7 @@ public class TwitterServiceTest {
     public void postTweet_shouldReturnTweetInformation() throws TwitterClientException, IOException {
         when(this.twitterClient.postTweet(anyString(), any())).thenReturn(new Status());
         when(this.tweetRepository.save(any())).thenReturn(Tweet.builder().id(1L).build());
-        TweetResponse tweetResponse = this.twitterService.postTweet(tweetRequest(), null);
+        TweetResponse tweetResponse = this.twitterService.postTweet(tweetText(), null);
 
         assertEquals(tweetResponse.getUsername(), "andrea_juanma");
         assertEquals(tweetResponse.getText(), "This is a new tweet.");
@@ -83,7 +83,7 @@ public class TwitterServiceTest {
     @Test(expected = TwitterBadRequestException.class)
     public void postTweet_shouldThrowTwitterBadRequestException() throws TwitterClientException, IOException {
         when(this.twitterClient.postTweet(anyString(), any())).thenReturn(null);
-        TweetResponse tweetResponse = this.twitterService.postTweet(tweetRequest(), null);
+        TweetResponse tweetResponse = this.twitterService.postTweet(tweetText(), null);
 
         assertNull(tweetResponse);
     }
@@ -266,8 +266,8 @@ public class TwitterServiceTest {
         verify(this.tweetRepository, times(0)).save(any());
     }
 
-    private TweetRequest tweetRequest() {
-        return TweetRequest.builder().text("This is a new tweet.").build();
+    private String tweetText() {
+        return "This is a new tweet.";
     }
 
     private ScheduleTweetRequest scheduleTweetRequest() {
