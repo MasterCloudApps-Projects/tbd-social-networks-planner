@@ -20,9 +20,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc(addFilters = false)
-@ActiveProfiles("dev")
+@ActiveProfiles("test")
 public class TwitterAuthenticationIntegrationControllerTest {
     private static final String BASE_URL = "/twitter/auth";
     private static final String AUTHORIZE = "/authorize";
