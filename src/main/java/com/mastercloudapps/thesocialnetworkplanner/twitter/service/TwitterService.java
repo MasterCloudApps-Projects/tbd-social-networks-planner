@@ -53,13 +53,13 @@ public class TwitterService {
         }
     }
 
-    public TweetResponse postTweet(TweetRequest tweetRequest, MultipartFile imageFile) throws TwitterClientException, IOException {
+    public TweetResponse postTweet(String text, MultipartFile imageFile) throws TwitterClientException, IOException {
         Date creationDate = new Date();
-        Status status = this.twitterClient.postTweet(tweetRequest.getText(), createFile(imageFile));
+        Status status = this.twitterClient.postTweet(text, createFile(imageFile));
         if (status != null) {
             Tweet tweet = this.tweetRepository.save(Tweet.builder()
                     .twitterId(status.getId())
-                    .text(tweetRequest.getText())
+                    .text(text)
                     .username(status.getUser().getScreenName())
                     .creationDate(creationDate)
                     .updateDate(status.getCreatedAt()).build());

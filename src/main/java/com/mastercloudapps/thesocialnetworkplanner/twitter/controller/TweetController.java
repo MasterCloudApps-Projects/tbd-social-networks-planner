@@ -26,6 +26,9 @@ import org.springframework.web.multipart.MultipartFile;
 import twitter4j.TwitterException;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -54,10 +57,14 @@ public class TweetController {
     }
 
     @PostMapping()
-    public ResponseEntity<TweetResponse> postTweet(@Valid @RequestBody TweetRequest tweetRequest, @RequestParam(value = "image",
+    public ResponseEntity<TweetResponse> postTweet(
+            @RequestParam("text")
+            @Size(max = 280)
+            @NotNull
+                    String text, @RequestParam(value = "image",
             required = false) MultipartFile multipartFile) throws
             TwitterClientException, IOException {
-        TweetResponse tweetResponse = this.twitterService.postTweet(tweetRequest, multipartFile);
+        TweetResponse tweetResponse = this.twitterService.postTweet(text, multipartFile);
         return ResponseEntity.ok(tweetResponse);
     }
 

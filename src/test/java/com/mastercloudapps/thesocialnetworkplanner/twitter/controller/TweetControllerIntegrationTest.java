@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -59,6 +60,7 @@ public class TweetControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].id").value(TWEET_ID))
                 .andExpect(jsonPath("$[0].text").value("This is a new tweet."))
                 .andExpect(jsonPath("$", hasSize(2)));
+        doNothing().when(this.twitterService).postScheduledTweets();
     }
 
     @Test
@@ -86,8 +88,7 @@ public class TweetControllerIntegrationTest {
 
     @Test
     public void postTweet_shouldReturnTweetInformation() throws Exception {
-        String jsonRequest = "{ \"text\" : \"This is a new tweet\" }";
-        MockMultipartFile multipartFile = new MockMultipartFile ("file", "image.jpeg",
+        MockMultipartFile multipartFile = new MockMultipartFile ("image", "image.jpeg",
                 MediaType.IMAGE_JPEG_VALUE,
                 "Image for tweet".getBytes());
         when(this.twitterService.postTweet(any(), any())).thenReturn(TweetResponse.builder()
@@ -96,7 +97,7 @@ public class TweetControllerIntegrationTest {
                 .text("This is a new tweet.")
                 .build());
 
-        mockMvc.perform(multipart(BASE_URL).file(multipartFile).contentType(MediaType.APPLICATION_JSON).content(jsonRequest))
+        mockMvc.perform(multipart(BASE_URL).file(multipartFile).param("text","New tweet"))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
                 .andExpect(jsonPath("$.username").value("andrea_juanma"))
                 .andExpect(jsonPath("$.id").value(TWEET_ID))
@@ -105,13 +106,12 @@ public class TweetControllerIntegrationTest {
 
     @Test
     public void postTweet_shouldThrowTwitterBadRequestException() throws Exception {
-        String jsonRequest = "{ \"text\" : \"This is a new tweet\" }";
-        MockMultipartFile multipartFile = new MockMultipartFile ("file", "image.jpeg",
+        MockMultipartFile multipartFile = new MockMultipartFile ("image", "image.jpeg",
                 MediaType.IMAGE_JPEG_VALUE,
                 "Image for tweet".getBytes());
         when(this.twitterService.postTweet(any(),any())).thenThrow(TwitterBadRequestException.class);
 
-        mockMvc.perform(multipart(BASE_URL).file(multipartFile).contentType(MediaType.APPLICATION_JSON).content(jsonRequest))
+        mockMvc.perform(multipart(BASE_URL).file(multipartFile).param("text", "New tweet!"))
                 .andExpect(MockMvcResultMatchers.status().is4xxClientError());
     }
 
