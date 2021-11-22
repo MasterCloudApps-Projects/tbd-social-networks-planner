@@ -7,17 +7,24 @@ import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.Instagram
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramImageIdResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramMediaResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramPostInfoResponse;
-import com.mastercloudapps.thesocialnetworkplanner.api.resource.model.ResourceResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.repository.InstagramRepository;
+import com.mastercloudapps.thesocialnetworkplanner.api.resource.service.ResourceService;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 public class InstagramServiceTest {
@@ -25,11 +32,22 @@ public class InstagramServiceTest {
     @Mock
     private InstagramRestClient instagramRestClient;
 
+    @Mock
+    private ResourceService resourceService;
+
+    @Mock
+    private InstagramRepository instagramRepository;
+
     private InstagramService instagramService;
+
+    private MockMultipartFile multipartFile;
 
     @Before
     public void before() {
-        this.instagramService = new InstagramService(instagramRestClient);
+        this.instagramService = new InstagramService(instagramRestClient, resourceService, instagramRepository);
+        this.multipartFile = new MockMultipartFile("image", "image.jpeg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "Image for instagram".getBytes());
     }
 
     @Test
@@ -83,11 +101,11 @@ public class InstagramServiceTest {
     @Test
     public void post_shouldReturnPostId() throws InstagramException {
         when(this.instagramRestClient.post(any(), any()))
-                .thenReturn("postId");
-        String postId = this.instagramService.post(ResourceResponse.builder().id(123L).build(),
+                .thenReturn("1111");
+        String postId = this.instagramService.post(this.multipartFile,
                 "caption");
 
-        Assertions.assertThat(postId).isEqualTo("postId");
+        Assertions.assertThat(postId).isEqualTo("1111");
         verify(this.instagramRestClient, times(1)).post(any(), anyString());
     }
 
@@ -95,7 +113,7 @@ public class InstagramServiceTest {
     public void post_shouldReturnPostIdNull() throws InstagramException {
         when(this.instagramRestClient.post(any(), any()))
                 .thenReturn(null);
-        String postId = this.instagramService.post(ResourceResponse.builder().id(123L).build(),
+        String postId = this.instagramService.post(this.multipartFile,
                 "caption");
 
         Assertions.assertThat(postId).isNull();
@@ -106,7 +124,7 @@ public class InstagramServiceTest {
     public void post_shouldThrowInstagramException() throws InstagramException {
         when(this.instagramRestClient.post(any(), any()))
                 .thenThrow(new InstagramException());
-        this.instagramService.post(ResourceResponse.builder().id(123L).build(),
+        this.instagramService.post(this.multipartFile,
                 "caption");
         verify(this.instagramRestClient, times(1)).post(any(), anyString());
     }
