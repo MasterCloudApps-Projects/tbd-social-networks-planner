@@ -5,11 +5,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.config.InstagramSession;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramException;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.*;
-import com.mastercloudapps.thesocialnetworkplanner.api.resource.model.ResourceResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.AccessTokenRequest;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.DeviceLoginRequest;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramAccessTokenResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramBusinessAccountResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramDeviceLoginResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramImageIdResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramMediaResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramPagesResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramPostInfoResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.Page;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -118,8 +131,8 @@ public class InstagramRestClient implements InstagramClient {
     }
 
     @Override
-    public String post(ResourceResponse resource, String caption) throws InstagramException {
-        String containerId = this.createContainer(resource.getUrl(), caption);
+    public String post(String resource, String caption) throws InstagramException {
+        String containerId = this.createContainer(resource, caption);
         if (containerId == null) {
             throw new InstagramException("Cannot publish. Image container does not exist.");
         }

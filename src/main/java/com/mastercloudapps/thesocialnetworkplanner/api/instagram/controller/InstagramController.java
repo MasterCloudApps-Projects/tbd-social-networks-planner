@@ -8,13 +8,18 @@ import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.Instagram
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.LoginCallbackResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.PostResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.service.InstagramService;
-import com.mastercloudapps.thesocialnetworkplanner.api.resource.model.ResourceResponse;
-import com.mastercloudapps.thesocialnetworkplanner.api.resource.service.ResourceService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
@@ -26,11 +31,9 @@ import javax.validation.constraints.NotNull;
 public class InstagramController {
 
     private final InstagramService instagramService;
-    private final ResourceService resourceService;
 
-    public InstagramController(InstagramService instagramService, ResourceService resourceService) {
+    public InstagramController(InstagramService instagramService) {
         this.instagramService = instagramService;
-        this.resourceService = resourceService;
     }
 
     @GetMapping("/login")
@@ -47,8 +50,7 @@ public class InstagramController {
     @PostMapping("/post")
     public ResponseEntity<PostResponse> post(@RequestParam("caption") String caption, @RequestParam(value = "image")
             MultipartFile multipartFile) throws InstagramException {
-        ResourceResponse resource = this.resourceService.createImage(multipartFile);
-        return ResponseEntity.ok(PostResponse.builder().postId(this.instagramService.post(resource, caption)).build());
+        return ResponseEntity.ok(PostResponse.builder().postId(this.instagramService.post(multipartFile, caption)).build());
     }
 
     @GetMapping("/post/{id}")

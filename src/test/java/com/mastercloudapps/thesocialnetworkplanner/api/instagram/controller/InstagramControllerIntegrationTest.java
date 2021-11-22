@@ -7,7 +7,6 @@ import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.Instagram
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramMediaResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramPostInfoResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.service.InstagramService;
-import com.mastercloudapps.thesocialnetworkplanner.api.resource.model.ResourceResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.resource.service.ResourceService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -174,7 +173,7 @@ public class InstagramControllerIntegrationTest {
 
     @Test
     public void post_shouldReturnPostId() throws Exception {
-        when(this.resourceService.createImage(any())).thenReturn(ResourceResponse.builder().id(1234L).build());
+        when(this.resourceService.createImage(any())).thenReturn("image.jpeg");
         when(this.instagramService.post(any(), any())).thenReturn("postId");
 
         MockMultipartFile multipartFile = new MockMultipartFile("image", "image.jpeg",

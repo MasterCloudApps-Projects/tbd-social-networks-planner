@@ -1,6 +1,5 @@
 package com.mastercloudapps.thesocialnetworkplanner.api.resource.controller;
 
-import com.mastercloudapps.thesocialnetworkplanner.api.resource.model.ResourceResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.resource.service.ResourceService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,9 +20,9 @@ public class ResourceController {
     }
 
     @PostMapping()
-    public ResponseEntity<ResourceResponse> upload(@RequestParam(value = "image",
+    public ResponseEntity<String> upload(@RequestParam(value = "image",
             required = false) MultipartFile multipartFile) {
-        ResourceResponse resource = this.resourceService.createImage(multipartFile);
+        String resource = this.resourceService.createImage(multipartFile);
         return ResponseEntity.ok(resource);
     }
 

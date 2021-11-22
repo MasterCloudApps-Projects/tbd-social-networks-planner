@@ -6,7 +6,6 @@ import com.mastercloudapps.thesocialnetworkplanner.api.instagram.config.Instagra
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.*;
-import com.mastercloudapps.thesocialnetworkplanner.api.resource.model.ResourceResponse;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -195,7 +194,7 @@ public class InstagramRestClientTest {
     public void post_shouldThrowInstagramBadRequestException_whenAccountIdIsNull() throws InstagramException {
         when(this.instagramSession.getAccountId()).thenReturn(null);
 
-        this.instagramRestClient.post(resourceResponse(), "caption");
+        this.instagramRestClient.post(resource(), "caption");
     }
 
     @Test(expected = InstagramBadRequestException.class)
@@ -205,7 +204,7 @@ public class InstagramRestClientTest {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap()))
                 .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
 
-        this.instagramRestClient.post(resourceResponse(), "caption");
+        this.instagramRestClient.post(resource(), "caption");
     }
 
     @Test(expected = InstagramException.class)
@@ -215,7 +214,7 @@ public class InstagramRestClientTest {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap()))
                 .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
-        this.instagramRestClient.post(resourceResponse(), "caption");
+        this.instagramRestClient.post(resource(), "caption");
     }
 
     @Test(expected = InstagramException.class)
@@ -225,7 +224,7 @@ public class InstagramRestClientTest {
         when(this.restTemplate.exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap()))
                 .thenReturn(ResponseEntity.ok(null));
 
-        this.instagramRestClient.post(resourceResponse(), "caption");
+        this.instagramRestClient.post(resource(), "caption");
     }
 
     @Test
@@ -236,7 +235,7 @@ public class InstagramRestClientTest {
                 .thenReturn(ResponseEntity.ok(InstagramImageIdResponse.builder().id("containerId").build()))
                 .thenReturn(ResponseEntity.ok(InstagramImageIdResponse.builder().id("imageId").build()));
 
-        String imageId = this.instagramRestClient.post(resourceResponse(), "caption");
+        String imageId = this.instagramRestClient.post(resource(), "caption");
 
         Mockito.verify(this.restTemplate, times(2))
                 .exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap());
@@ -252,7 +251,7 @@ public class InstagramRestClientTest {
                 .thenReturn(ResponseEntity.ok(InstagramImageIdResponse.builder().id("containerId").build()))
                 .thenThrow(httpClientErrorException(HttpStatus.BAD_REQUEST));
 
-        this.instagramRestClient.post(resourceResponse(), "caption");
+        this.instagramRestClient.post(resource(), "caption");
 
         Mockito.verify(this.restTemplate, times(2))
                 .exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap());
@@ -266,7 +265,7 @@ public class InstagramRestClientTest {
                 .thenReturn(ResponseEntity.ok(InstagramImageIdResponse.builder().id("containerId").build()))
                 .thenThrow(httpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
-        this.instagramRestClient.post(resourceResponse(), "caption");
+        this.instagramRestClient.post(resource(), "caption");
 
         Mockito.verify(this.restTemplate, times(2))
                 .exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap());
@@ -280,7 +279,7 @@ public class InstagramRestClientTest {
                 .thenReturn(ResponseEntity.ok(InstagramImageIdResponse.builder().id("containerId").build()))
                 .thenReturn(ResponseEntity.ok(null));
 
-        String imageId = this.instagramRestClient.post(resourceResponse(), "caption");
+        String imageId = this.instagramRestClient.post(resource(), "caption");
 
         Mockito.verify(this.restTemplate, times(2))
                 .exchange(anyString(), any(), any(), eq(InstagramImageIdResponse.class), anyMap());
@@ -427,8 +426,8 @@ public class InstagramRestClientTest {
                 .build();
     }
 
-    private ResourceResponse resourceResponse() {
-        return ResourceResponse.builder().url("imageUrl").build();
+    private String resource() {
+        return "imageUrl";
     }
 
 }
