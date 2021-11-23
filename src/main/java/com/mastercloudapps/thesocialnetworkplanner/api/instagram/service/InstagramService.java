@@ -7,6 +7,7 @@ import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.Instagram
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramDeviceLoginResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramMediaResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramPostInfoResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.repository.InstagramRepository;
 import com.mastercloudapps.thesocialnetworkplanner.api.resource.model.Resource;
 import com.mastercloudapps.thesocialnetworkplanner.api.resource.service.ResourceService;
@@ -54,7 +55,7 @@ public class InstagramService {
         String url = this.resourceService.createImage(multipartFile);
         String postId = this.instagramRestClient.post(url, caption);
         if (StringUtils.isNotBlank(postId)) {
-            Instagram instagramPost = Instagram.builder().instagramId(Long.parseLong(postId)).creationDate(new Date()).text(caption).username("prueba").build();
+            Instagram instagramPost = Instagram.builder().instagramId(Long.parseLong(postId)).creationDate(new Date()).text(caption).username(this.getAccount()).build();
             this.instagramRepository.save(instagramPost);
             Resource resource = Resource.builder().url(url).creationDate(new Date()).instagram(instagramPost).build();
             this.resourceService.saveResource(resource);
@@ -68,5 +69,20 @@ public class InstagramService {
 
     public InstagramMediaResponse getAllMedia() throws InstagramException {
         return this.instagramRestClient.getAllMedia();
+    }
+
+    public void postScheduledInstagram(Instagram instagram) throws InstagramException {
+        log.info("Posting scheduled instagram with Visitor.");
+        this.instagramRestClient.post(instagram.getResource().get(0).getUrl(), instagram.getText());
+    }
+
+    public InstagramResponse scheduleInstagram(String caption, MultipartFile multipartFile, Date publishDateStore) throws InstagramException {
+        String url = this.resourceService.createImage(multipartFile);
+        Instagram instagramPost = Instagram.builder().creationDate(new Date()).scheduledDate(publishDateStore).text(caption).username(this.getAccount()).build();
+        this.instagramRepository.save(instagramPost);
+        Resource resource = Resource.builder().url(url).creationDate(new Date()).instagram(instagramPost).build();
+        this.resourceService.saveResource(resource);
+        return InstagramResponse.builder().id(instagramPost.getId()).scheduledDate(instagramPost.getScheduledDate())
+                .caption(instagramPost.getText()).url(resource.getUrl()).username(instagramPost.getUsername()).build();
     }
 }
