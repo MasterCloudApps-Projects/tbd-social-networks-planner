@@ -1,6 +1,8 @@
 package com.mastercloudapps.thesocialnetworkplanner.api.instagram.model;
 
 import com.mastercloudapps.thesocialnetworkplanner.api.resource.model.Resource;
+import com.mastercloudapps.thesocialnetworkplanner.api.schedule.Schedulable;
+import com.mastercloudapps.thesocialnetworkplanner.api.schedule.Visitor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +22,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Entity
-public class Instagram {
+public class Instagram implements Schedulable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,4 +36,14 @@ public class Instagram {
     private Date scheduledDate;
     private Date creationDate;
     private Date updateDate;
+
+    @Override
+    public boolean shouldPost() {
+        return this.scheduledDate.before(new Date());
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.postOnInstagram(this);
+    }
 }
