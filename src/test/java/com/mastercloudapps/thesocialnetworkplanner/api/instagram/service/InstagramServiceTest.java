@@ -3,10 +3,7 @@ package com.mastercloudapps.thesocialnetworkplanner.api.instagram.service;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.client.InstagramRestClient;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramNotAuthorizeException;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramDeviceLoginResponse;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramImageIdResponse;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramMediaResponse;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramPostInfoResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.*;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.repository.InstagramRepository;
 import com.mastercloudapps.thesocialnetworkplanner.api.resource.service.ResourceService;
 import org.assertj.core.api.Assertions;
@@ -57,10 +54,11 @@ public class InstagramServiceTest {
                         .userCode("XXXX")
                         .verificationUri("verificationUri")
                         .build());
-        String response = this.instagramService.login();
+        InstagramLoginResponse response = this.instagramService.login();
 
         verify(this.instagramRestClient, times(1)).login();
-        Assertions.assertThat(response).isEqualTo("Enter this code XXXX on verificationUri");
+        Assertions.assertThat(response.getEnterCode()).isEqualTo("XXXX");
+        Assertions.assertThat(response.getVisitUrl()).isEqualTo("verificationUri");
     }
 
     @Test(expected = InstagramException.class)

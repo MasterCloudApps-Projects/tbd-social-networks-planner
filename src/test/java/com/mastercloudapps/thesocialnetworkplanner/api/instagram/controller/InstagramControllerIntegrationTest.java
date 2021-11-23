@@ -4,6 +4,7 @@ import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.Insta
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramNotAuthorizeException;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramImageIdResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramLoginResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramMediaResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramPostInfoResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.service.InstagramService;
@@ -51,11 +52,14 @@ public class InstagramControllerIntegrationTest {
 
     @Test
     public void login_shouldReturn200OK() throws Exception {
-        when(this.instagramService.login()).thenReturn("Enter this code XXXXX on https://www.facebook.com/device");
+        when(this.instagramService.login()).thenReturn(InstagramLoginResponse.builder()
+                .visitUrl("https://www.facebook.com/device")
+                .enterCode("XXXX").build());
 
         mockMvc.perform(get(BASE_URL + LOGIN))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
-                .andExpect(jsonPath("$").value("Enter this code XXXXX on https://www.facebook.com/device"));
+                .andExpect(jsonPath("$.visit_this_url").value("https://www.facebook.com/device"))
+                .andExpect(jsonPath("$.enter_this_code").value("XXXX"));
     }
 
     @Test

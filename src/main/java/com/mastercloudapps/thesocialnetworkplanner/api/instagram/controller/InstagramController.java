@@ -3,11 +3,7 @@ package com.mastercloudapps.thesocialnetworkplanner.api.instagram.controller;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramNotAuthorizeException;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramMediaResponse;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramPostInfoResponse;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramResponse;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.LoginCallbackResponse;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.PostResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.*;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.service.InstagramService;
 import com.mastercloudapps.thesocialnetworkplanner.api.twitter.model.TweetResponse;
 import io.swagger.annotations.ApiOperation;
@@ -46,13 +42,13 @@ public class InstagramController {
 
     @ApiOperation(value = "Get login code and URL from Facebook API.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Successful. Code and URL to give permissions to the app.", response = String.class),
+            @ApiResponse(code = 200, message = "Successful. Code and URL to give permissions to the app.", response = InstagramLoginResponse.class),
             @ApiResponse(code = 400, message = "Bad request."),
             @ApiResponse(code = 401, message = "Unauthorized."),
             @ApiResponse(code = 500, message = "Internal server error.")
     })
     @GetMapping("/login")
-    public ResponseEntity<String> login() throws InstagramException {
+    public ResponseEntity<InstagramLoginResponse> login() throws InstagramException {
         return ResponseEntity.ok(this.instagramService.login());
     }
 
