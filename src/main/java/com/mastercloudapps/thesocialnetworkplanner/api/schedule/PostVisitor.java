@@ -14,34 +14,28 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.mastercloudapps.thesocialnetworkplanner.config.ff4jconfig.FeatureFlagsInitializer.FEATURE_NEW_SCHEDULER;
-
 @Log4j2
 @Service
 public class PostVisitor implements Visitor {
 
     private final InstagramService instagramService;
     private final TwitterService twitterService;
-    private final FF4j ff4j;
 
-    public PostVisitor(InstagramService instagramService, TwitterService twitterService, FF4j ff4j) {
+    public PostVisitor(InstagramService instagramService, TwitterService twitterService) {
         this.instagramService = instagramService;
         this.twitterService = twitterService;
-        this.ff4j = ff4j;
     }
 
-    @Scheduled(fixedDelay = 3600000)
+    @Scheduled(fixedDelay = 3600000, initialDelay = 120000)
     public void postUnpublishedPosts() {
-        if (ff4j.check(FEATURE_NEW_SCHEDULER)) {
-            List<Schedulable> twitterPosts = this.twitterService.getUnpublishedTweetsNew();
-            List<Schedulable> instagramPosts = this.instagramService.getUnpublishedPosts();
-            List<Schedulable> allPosts = new ArrayList();
-            allPosts.addAll(twitterPosts);
-            allPosts.addAll(instagramPosts);
-            for (Schedulable post : allPosts) {
-                if (post.shouldPost()) {
-                    post.accept(this);
-                }
+        List<Schedulable> twitterPosts = this.twitterService.getUnpublishedTweetsNew();
+        List<Schedulable> instagramPosts = this.instagramService.getUnpublishedPosts();
+        List<Schedulable> allPosts = new ArrayList();
+        allPosts.addAll(twitterPosts);
+        allPosts.addAll(instagramPosts);
+        for (Schedulable post : allPosts) {
+            if (post.shouldPost()) {
+                post.accept(this);
             }
         }
     }

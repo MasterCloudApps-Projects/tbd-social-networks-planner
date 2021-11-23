@@ -62,7 +62,6 @@ public class TweetControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].id").value(TWEET_ID))
                 .andExpect(jsonPath("$[0].text").value("This is a new tweet."))
                 .andExpect(jsonPath("$", hasSize(2)));
-        doNothing().when(this.twitterService).postScheduledTweets();
     }
 
     @Test

@@ -13,9 +13,17 @@ import io.swagger.annotations.ApiResponses;
 import org.ff4j.FF4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
@@ -26,18 +34,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-import static com.mastercloudapps.thesocialnetworkplanner.config.ff4jconfig.FeatureFlagsInitializer.FEATURE_NEW_SCHEDULER;
-
 @RestController
 @Validated
 @RequestMapping(value = "/api/v1/twitter")
 public class TweetController {
     private final TwitterService twitterService;
-    private final FF4j ff4j;
 
-    public TweetController(TwitterService twitterService, FF4j ff4j) {
+    public TweetController(TwitterService twitterService) {
         this.twitterService = twitterService;
-        this.ff4j = ff4j;
     }
 
     @ApiOperation(value = "Get all tweets of account.")
@@ -115,13 +119,6 @@ public class TweetController {
         tweetRequest.setPublishDateStore(formatter.parse(tweetRequest.getPublishDate()));
         TweetResponse tweetResponse = twitterService.scheduleTweet(tweetRequest);
         return ResponseEntity.ok(tweetResponse);
-    }
-
-    @Scheduled(fixedDelay = 3600000)
-    public void postScheduledTweets() throws TwitterClientException {
-        if (!ff4j.check(FEATURE_NEW_SCHEDULER)) {
-            this.twitterService.postScheduledTweets();
-        }
     }
 
     @ExceptionHandler(TweetNotFoundException.class)
