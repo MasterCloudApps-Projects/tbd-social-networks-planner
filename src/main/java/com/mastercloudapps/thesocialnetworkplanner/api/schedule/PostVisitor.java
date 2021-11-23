@@ -11,6 +11,7 @@ import org.ff4j.FF4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.mastercloudapps.thesocialnetworkplanner.config.ff4jconfig.FeatureFlagsInitializer.FEATURE_NEW_SCHEDULER;
@@ -32,8 +33,12 @@ public class PostVisitor implements Visitor {
     @Scheduled(fixedDelay = 3600000)
     public void postUnpublishedPosts() {
         if (ff4j.check(FEATURE_NEW_SCHEDULER)) {
-            List<Schedulable> twitterPosts = twitterService.getUnpublishedTweetsNew();
-            for (Schedulable post : twitterPosts) {
+            List<Schedulable> twitterPosts = this.twitterService.getUnpublishedTweetsNew();
+            List<Schedulable> instagramPosts = this.instagramService.getUnpublishedPosts();
+            List<Schedulable> allPosts = new ArrayList();
+            allPosts.addAll(twitterPosts);
+            allPosts.addAll(instagramPosts);
+            for (Schedulable post : allPosts) {
                 if (post.shouldPost()) {
                     post.accept(this);
                 }

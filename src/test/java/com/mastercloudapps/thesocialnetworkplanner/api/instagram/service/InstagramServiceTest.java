@@ -3,8 +3,15 @@ package com.mastercloudapps.thesocialnetworkplanner.api.instagram.service;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.client.InstagramRestClient;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramNotAuthorizeException;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.*;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.Instagram;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramDeviceLoginResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramImageIdResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramLoginResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramMediaResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramPostInfoResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.repository.InstagramRepository;
+import com.mastercloudapps.thesocialnetworkplanner.api.resource.model.Resource;
 import com.mastercloudapps.thesocialnetworkplanner.api.resource.service.ResourceService;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -15,8 +22,11 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.times;
@@ -189,5 +199,28 @@ public class InstagramServiceTest {
 
         verify(this.instagramRestClient, times(1)).getAllMedia();
         Assertions.assertThat(instagramMediaResponse).isNull();
+    }
+
+    @Test
+    public void scheduleInstagram_shouldReturnInstagramInformation() throws InstagramException {
+        Instagram instagram = instagram();
+        Resource resource = resource();
+        when(this.instagramRestClient.getAccount()).thenReturn("andrea_juanma");
+        when(this.instagramRepository.save(any())).thenReturn(instagram);
+        when(this.resourceService.saveResource(any())).thenReturn(resource);
+        when(this.resourceService.createImage(any())).thenReturn("photo_url");
+        InstagramResponse instagramResponse = this.instagramService.scheduleInstagram("This is a new post.", this.multipartFile, new Date());
+        assertThat(instagramResponse.getId()).isEqualTo(instagram.getId());
+        assertThat(instagramResponse.getUsername()).isEqualTo(instagram.getUsername());
+        assertThat(instagramResponse.getCaption()).isEqualTo(instagram.getText());
+    }
+
+
+    private Instagram instagram() {
+        return Instagram.builder().id(1111L).text("This is a new post.").username("andrea_juanma").resource(Arrays.asList(resource())).build();
+    }
+
+    private Resource resource() {
+        return Resource.builder().id(1111L).url("photo_url").build();
     }
 }
