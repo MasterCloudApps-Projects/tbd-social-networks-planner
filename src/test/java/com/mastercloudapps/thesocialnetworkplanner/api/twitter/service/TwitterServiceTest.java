@@ -266,6 +266,32 @@ public class TwitterServiceTest {
         verify(this.tweetRepository, times(0)).save(any());
     }
 
+    @Test
+    public void postScheduledTweet_shouldPostTweet() throws TwitterClientException {
+        Tweet tweet = tweet();
+        when(this.twitterClient.getUsername()).thenReturn("andrea_juanma");
+        when(this.twitterClient.postTweet(anyString(), any())).thenReturn(new Status());
+        this.twitterService.postScheduledTweet(tweet);
+        verify(this.tweetRepository, times(1)).save(any());
+    }
+
+    @Test
+    public void postScheduledTweet_shouldNotPost_whenUsernameIsDifferent() throws TwitterClientException {
+        Tweet tweet = tweet();
+        when(this.twitterClient.getUsername()).thenReturn("other");
+        this.twitterService.postScheduledTweet(tweet);
+        verify(this.tweetRepository, times(0)).save(any());
+    }
+
+    @Test
+    public void postScheduledTweet_shouldNotPost_whenStatusIsNull() throws TwitterClientException {
+        Tweet tweet = tweet();
+        when(this.twitterClient.getUsername()).thenReturn("other");
+        this.twitterService.postScheduledTweet(tweet);
+        verify(this.twitterClient, times(0)).postTweet(anyString(), any());
+        verify(this.tweetRepository, times(0)).save(any());
+    }
+
     private String tweetText() {
         return "This is a new tweet.";
     }
