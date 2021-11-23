@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 @Component
 public class FeatureFlagsInitializer {
     public static String FEATURE_TWITTER = "twitter";
+    public static String FEATURE_NEW_SCHEDULER = "new_scheduler";
 
     private final FF4j ff4j;
 
@@ -19,6 +20,9 @@ public class FeatureFlagsInitializer {
     public void initializeFlags() {
         if (!ff4j.exist(FEATURE_TWITTER)) {
             ff4j.createFeature(FEATURE_TWITTER, false);
+        }
+        if (!ff4j.exist(FEATURE_NEW_SCHEDULER)) {
+            ff4j.createFeature(FEATURE_NEW_SCHEDULER, true);
         }
     }
 }

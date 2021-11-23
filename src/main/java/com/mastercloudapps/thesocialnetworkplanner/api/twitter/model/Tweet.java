@@ -1,6 +1,8 @@
 package com.mastercloudapps.thesocialnetworkplanner.api.twitter.model;
 
 import com.mastercloudapps.thesocialnetworkplanner.api.resource.model.Resource;
+import com.mastercloudapps.thesocialnetworkplanner.api.schedule.Schedulable;
+import com.mastercloudapps.thesocialnetworkplanner.api.schedule.Visitor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +22,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Entity
-public class Tweet {
+public class Tweet implements Schedulable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,6 +44,16 @@ public class Tweet {
 
     public void delete() {
         this.deletedDate = new Date();
+    }
+
+    @Override
+    public boolean shouldPost() {
+        return this.scheduledDate.before(new Date());
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        visitor.postOnTwitter(this);
     }
 }
 

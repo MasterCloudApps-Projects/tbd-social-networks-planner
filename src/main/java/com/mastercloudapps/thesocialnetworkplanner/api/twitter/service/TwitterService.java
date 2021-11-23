@@ -1,5 +1,6 @@
 package com.mastercloudapps.thesocialnetworkplanner.api.twitter.service;
 
+import com.mastercloudapps.thesocialnetworkplanner.api.schedule.Schedulable;
 import com.mastercloudapps.thesocialnetworkplanner.api.twitter.client.TwitterClient;
 import com.mastercloudapps.thesocialnetworkplanner.api.twitter.exception.TwitterBadRequestException;
 import com.mastercloudapps.thesocialnetworkplanner.api.twitter.exception.TwitterClientException;
@@ -73,7 +74,7 @@ public class TwitterService {
         Status status = this.twitterClient.deleteTweet(tweetId);
 
         if (status != null) {
-            if (!optionalTweet.isEmpty()) {
+            if (optionalTweet.isPresent()) {
                 Tweet tweet = optionalTweet.get();
                 tweet.delete();
                 this.tweetRepository.save(tweet);
@@ -141,13 +142,17 @@ public class TwitterService {
         return this.tweetRepository.findByTwitterIdIsNull().stream().map(Tweet::toTweetResponse).collect(Collectors.toList());
     }
 
+    public List<Schedulable> getUnpublishedTweetsNew() {
+        return this.tweetRepository.findByTwitterIdIsNull().stream().map(post -> (Schedulable)post).collect(Collectors.toList());
+    }
+
     public TweetResponse scheduleTweet(ScheduleTweetRequest tweetResquest) {
         Tweet tweet = this.tweetRepository.save(Tweet.builder().text(tweetResquest.getText()).username(this.twitterClient.getUsername()).creationDate(new Date()).scheduledDate(tweetResquest.getPublishDateStore()).build());
         return TweetResponse.builder().id(tweet.getId()).text(tweet.getText()).username(tweet.getUsername()).scheduledDate(tweet.getScheduledDate()).build();
     }
 
     public void postScheduledTweets() throws TwitterClientException {
-        log.info("Posting scheduled tweets.");
+        log.info("Posting scheduled tweets - deprecated");
         List<TweetResponse> unpublishedTweets = this.getUnpublishedTweets();
         for (TweetResponse tweetToPublish : unpublishedTweets) {
             Date now = new Date();
@@ -170,6 +175,21 @@ public class TwitterService {
                     log.info("Tweet with id: " + tweetToPublish.getId() + " can´t be published because the logged user is different.");
                 }
             }
+        }
+    }
+
+    public void postScheduledTweet(Tweet tweet) throws TwitterClientException {
+        log.info("Posting scheduled tweets with Visitor.");
+        if (tweet.getUsername().equals(this.twitterClient.getUsername())) {
+            Status status = this.twitterClient.postTweet(tweet.getText(), null);
+            if (status != null) {
+                tweet.setTwitterId(status.getId());
+                tweet.setUpdateDate(status.getCreatedAt());
+                this.tweetRepository.save(tweet);
+                log.info("Published tweet with id: " + tweet.getId());
+            }
+        } else {
+            log.info("Tweet with id: " + tweet.getId() + " can´t be published because the logged user is different.");
         }
     }
 
