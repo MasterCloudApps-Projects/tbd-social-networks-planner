@@ -229,44 +229,6 @@ public class TwitterServiceTest {
     }
 
     @Test
-    public void postScheduledTweets_shouldPostTweet() throws TwitterClientException {
-        Tweet tweet = tweet();
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DAY_OF_WEEK, -1);
-        tweet.setScheduledDate(calendar.getTime());
-        when(this.tweetRepository.findByTwitterIdIsNull()).thenReturn(List.of(tweet));
-        when(this.twitterClient.getUsername()).thenReturn("andrea_juanma");
-        when(this.twitterClient.postTweet(anyString(), any())).thenReturn(new Status());
-        this.twitterService.postScheduledTweets();
-        verify(this.tweetRepository, times(1)).save(any());
-    }
-
-    @Test
-    public void postScheduledTweets_shouldNotPost_whenUsernameIsDifferent() throws TwitterClientException {
-        Tweet tweet = tweet();
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DAY_OF_WEEK, -1);
-        tweet.setScheduledDate(calendar.getTime());
-        when(this.tweetRepository.findByTwitterIdIsNull()).thenReturn(List.of(tweet));
-        when(this.twitterClient.getUsername()).thenReturn("other");
-        this.twitterService.postScheduledTweets();
-        verify(this.twitterClient, times(0)).postTweet(anyString(), any());
-        verify(this.tweetRepository, times(0)).save(any());
-    }
-
-    @Test
-    public void postScheduledTweets_shouldNotPost_whenScheduledDateIsAfterToday() throws TwitterClientException {
-        Tweet tweet = tweet();
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DAY_OF_WEEK, 1);
-        tweet.setScheduledDate(calendar.getTime());
-        when(this.tweetRepository.findByTwitterIdIsNull()).thenReturn(List.of(tweet));
-        this.twitterService.postScheduledTweets();
-        verify(this.twitterClient, times(0)).postTweet(anyString(), any());
-        verify(this.tweetRepository, times(0)).save(any());
-    }
-
-    @Test
     public void postScheduledTweet_shouldPostTweet() throws TwitterClientException {
         Tweet tweet = tweet();
         when(this.twitterClient.getUsername()).thenReturn("andrea_juanma");

@@ -151,33 +151,6 @@ public class TwitterService {
         return TweetResponse.builder().id(tweet.getId()).text(tweet.getText()).username(tweet.getUsername()).scheduledDate(tweet.getScheduledDate()).build();
     }
 
-    public void postScheduledTweets() throws TwitterClientException {
-        log.info("Posting scheduled tweets - deprecated");
-        List<TweetResponse> unpublishedTweets = this.getUnpublishedTweets();
-        for (TweetResponse tweetToPublish : unpublishedTweets) {
-            Date now = new Date();
-            if (tweetToPublish.getScheduledDate().before(now)) {
-                if (tweetToPublish.getUsername().equals(this.twitterClient.getUsername())) {
-                    Status status = this.twitterClient.postTweet(tweetToPublish.getText(), null);
-                    if (status != null) {
-                        Tweet tweet = Tweet.builder()
-                                .id(tweetToPublish.getId())
-                                .twitterId(status.getId())
-                                .text(tweetToPublish.getText())
-                                .username(tweetToPublish.getUsername())
-                                .creationDate(now)
-                                .scheduledDate(tweetToPublish.getScheduledDate())
-                                .updateDate(status.getCreatedAt()).build();
-                        this.tweetRepository.save(tweet);
-                        log.info("Published tweet with id: " + tweet.getId());
-                    }
-                } else {
-                    log.info("Tweet with id: " + tweetToPublish.getId() + " can´t be published because the logged user is different.");
-                }
-            }
-        }
-    }
-
     public void postScheduledTweet(Tweet tweet) throws TwitterClientException {
         log.info("Posting scheduled tweets with Visitor.");
         if (tweet.getUsername().equals(this.twitterClient.getUsername())) {
