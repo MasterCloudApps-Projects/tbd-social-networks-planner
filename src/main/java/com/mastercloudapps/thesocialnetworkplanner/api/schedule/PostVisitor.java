@@ -7,6 +7,7 @@ import com.mastercloudapps.thesocialnetworkplanner.api.twitter.model.Tweet;
 import com.mastercloudapps.thesocialnetworkplanner.api.twitter.service.TwitterService;
 import lombok.extern.log4j.Log4j2;
 import org.ff4j.FF4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,17 +20,22 @@ public class PostVisitor implements Visitor {
 
     private final InstagramService instagramService;
     private final TwitterService twitterService;
+    private final FF4j ff4j;
 
-    public PostVisitor(InstagramService instagramService, TwitterService twitterService) {
+    public PostVisitor(InstagramService instagramService, TwitterService twitterService, FF4j ff4j) {
         this.instagramService = instagramService;
         this.twitterService = twitterService;
+        this.ff4j = ff4j;
     }
 
+    @Scheduled(fixedDelay = 60000)
     public void postUnpublishedPosts() {
-        List<Schedulable> twitterPosts = twitterService.getUnpublishedTweetsNew();
-        for (Schedulable post : twitterPosts) {
-            if (post.shouldPost()) {
-                post.accept(this);
+        if (ff4j.check(FEATURE_NEW_SCHEDULER)) {
+            List<Schedulable> twitterPosts = twitterService.getUnpublishedTweetsNew();
+            for (Schedulable post : twitterPosts) {
+                if (post.shouldPost()) {
+                    post.accept(this);
+                }
             }
         }
     }

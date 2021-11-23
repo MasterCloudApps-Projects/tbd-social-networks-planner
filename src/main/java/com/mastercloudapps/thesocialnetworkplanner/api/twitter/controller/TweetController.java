@@ -7,6 +7,7 @@ import com.mastercloudapps.thesocialnetworkplanner.api.twitter.exception.Unautho
 import com.mastercloudapps.thesocialnetworkplanner.api.twitter.model.ScheduleTweetRequest;
 import com.mastercloudapps.thesocialnetworkplanner.api.twitter.model.TweetResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.twitter.service.TwitterService;
+import org.ff4j.FF4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import twitter4j.TwitterException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -32,14 +32,18 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import static com.mastercloudapps.thesocialnetworkplanner.config.ff4jconfig.FeatureFlagsInitializer.FEATURE_NEW_SCHEDULER;
+
 @RestController
 @Validated
 @RequestMapping(value = "/api/v1/twitter")
 public class TweetController {
     private final TwitterService twitterService;
+    private final FF4j ff4j;
 
-    public TweetController(TwitterService twitterService) {
+    public TweetController(TwitterService twitterService, FF4j ff4j) {
         this.twitterService = twitterService;
+        this.ff4j = ff4j;
     }
 
     @GetMapping("/tweets")
@@ -76,16 +80,18 @@ public class TweetController {
     }
 
     @PostMapping("/tweet/schedule")
-    public ResponseEntity<TweetResponse> scheduleTweet(@RequestBody @Valid ScheduleTweetRequest tweetRequest) throws ParseException, TwitterException {
+    public ResponseEntity<TweetResponse> scheduleTweet(@RequestBody @Valid ScheduleTweetRequest tweetRequest) throws ParseException {
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         tweetRequest.setPublishDateStore(formatter.parse(tweetRequest.getPublishDate()));
         TweetResponse tweetResponse = twitterService.scheduleTweet(tweetRequest);
         return ResponseEntity.ok(tweetResponse);
     }
 
-    @Scheduled(fixedDelay = 10000000)
+    @Scheduled(fixedDelay = 60000)
     public void postScheduledTweets() throws TwitterClientException {
-        this.twitterService.postScheduledTweets();
+        if (!ff4j.check(FEATURE_NEW_SCHEDULER)) {
+            this.twitterService.postScheduledTweets();
+        }
     }
 
     @ExceptionHandler(TweetNotFoundException.class)

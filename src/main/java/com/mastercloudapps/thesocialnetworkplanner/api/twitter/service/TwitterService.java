@@ -74,7 +74,7 @@ public class TwitterService {
         Status status = this.twitterClient.deleteTweet(tweetId);
 
         if (status != null) {
-            if (!optionalTweet.isEmpty()) {
+            if (optionalTweet.isPresent()) {
                 Tweet tweet = optionalTweet.get();
                 tweet.delete();
                 this.tweetRepository.save(tweet);
@@ -152,7 +152,7 @@ public class TwitterService {
     }
 
     public void postScheduledTweets() throws TwitterClientException {
-        log.info("Posting scheduled tweets.");
+        log.info("Posting scheduled tweets - deprecated");
         List<TweetResponse> unpublishedTweets = this.getUnpublishedTweets();
         for (TweetResponse tweetToPublish : unpublishedTweets) {
             Date now = new Date();

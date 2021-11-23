@@ -250,7 +250,7 @@ public class TwitterClient {
         String username = null;
         try {
             username = this.twitterSession.getUsername();
-        } catch (TwitterException e) {
+        } catch (TwitterException | IllegalStateException e) {
             log.error("Error retrieving username");
         }
         return username;
