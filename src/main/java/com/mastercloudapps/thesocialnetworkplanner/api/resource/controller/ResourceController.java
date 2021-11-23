@@ -1,6 +1,10 @@
 package com.mastercloudapps.thesocialnetworkplanner.api.resource.controller;
 
 import com.mastercloudapps.thesocialnetworkplanner.api.resource.service.ResourceService;
+import com.mastercloudapps.thesocialnetworkplanner.api.twitter.model.TweetResponse;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +23,10 @@ public class ResourceController {
         this.resourceService = resourceService;
     }
 
+    @ApiOperation(value = "Upload an image to AWS.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Successful. Resource id.", response = String.class)
+    })
     @PostMapping()
     public ResponseEntity<String> upload(@RequestParam(value = "image",
             required = false) MultipartFile multipartFile) {
@@ -26,6 +34,10 @@ public class ResourceController {
         return ResponseEntity.ok(resource);
     }
 
+    @ApiOperation(value = "Delete an image from AWS.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Successful. Deleted resource id.", response = String.class)
+    })
     @DeleteMapping()
     public ResponseEntity<String> delete(@RequestParam String urlFile) {
         this.resourceService.deleteImage(urlFile);

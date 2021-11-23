@@ -3,11 +3,7 @@ package com.mastercloudapps.thesocialnetworkplanner.api.instagram.service;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.client.InstagramRestClient;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramNotAuthorizeException;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.Instagram;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramDeviceLoginResponse;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramMediaResponse;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramPostInfoResponse;
-import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.*;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.repository.InstagramRepository;
 import com.mastercloudapps.thesocialnetworkplanner.api.resource.model.Resource;
 import com.mastercloudapps.thesocialnetworkplanner.api.resource.service.ResourceService;
@@ -33,11 +29,12 @@ public class InstagramService {
         this.instagramRepository = instagramRepository;
     }
 
-    public String login() throws InstagramException {
+    public InstagramLoginResponse login() throws InstagramException {
         InstagramDeviceLoginResponse instagramDeviceLoginResponse = this.instagramRestClient.login();
         if (instagramDeviceLoginResponse != null) {
-            return "Enter this code " + instagramDeviceLoginResponse.getUserCode() + " on "
-                    + instagramDeviceLoginResponse.getVerificationUri();
+            return InstagramLoginResponse.builder()
+                    .enterCode(instagramDeviceLoginResponse.getUserCode())
+                    .visitUrl(instagramDeviceLoginResponse.getVerificationUri()).build();
         } else {
             throw new InstagramException("Error getting authentication code.");
         }

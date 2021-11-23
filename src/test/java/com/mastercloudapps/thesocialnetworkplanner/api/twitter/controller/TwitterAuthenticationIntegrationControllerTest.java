@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 public class TwitterAuthenticationIntegrationControllerTest {
     private static final String BASE_URL = "/api/v1/twitter/auth";
-    private static final String AUTHORIZE = "/authorize";
+    private static final String AUTHORIZE = "/callback";
 
     @Autowired
     protected MockMvc mockMvc;
