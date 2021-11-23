@@ -102,6 +102,7 @@ public class InstagramServiceTest {
     public void post_shouldReturnPostId() throws InstagramException {
         when(this.instagramRestClient.post(any(), any()))
                 .thenReturn("1111");
+        when(this.instagramRestClient.getAccount()).thenReturn("prueba");
         String postId = this.instagramService.post(this.multipartFile,
                 "caption");
 

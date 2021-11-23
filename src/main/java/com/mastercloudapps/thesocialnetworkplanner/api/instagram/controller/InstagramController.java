@@ -5,6 +5,7 @@ import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.Insta
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramNotAuthorizeException;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramMediaResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramPostInfoResponse;
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.InstagramResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.LoginCallbackResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.PostResponse;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.service.InstagramService;
@@ -23,6 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @RestController
 @Validated
@@ -61,6 +65,15 @@ public class InstagramController {
     @GetMapping("/posts")
     public ResponseEntity<InstagramMediaResponse> getAllMedia() throws InstagramException {
         return ResponseEntity.ok(this.instagramService.getAllMedia());
+    }
+
+    @PostMapping("/schedule")
+    public ResponseEntity<InstagramResponse> scheduleInstagram(@RequestParam("caption") String caption, @RequestParam(value = "image")
+            MultipartFile multipartFile, @RequestParam("publishDate") String publishDate) throws ParseException, InstagramException {
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        Date publishDateStore = formatter.parse(publishDate);
+        InstagramResponse instagramResponse = this.instagramService.scheduleInstagram(caption, multipartFile, publishDateStore);
+        return ResponseEntity.ok(instagramResponse);
     }
 
     @ExceptionHandler(InstagramException.class)

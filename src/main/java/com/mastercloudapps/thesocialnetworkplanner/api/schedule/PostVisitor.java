@@ -1,5 +1,6 @@
 package com.mastercloudapps.thesocialnetworkplanner.api.schedule;
 
+import com.mastercloudapps.thesocialnetworkplanner.api.instagram.exception.InstagramException;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.model.Instagram;
 import com.mastercloudapps.thesocialnetworkplanner.api.instagram.service.InstagramService;
 import com.mastercloudapps.thesocialnetworkplanner.api.twitter.exception.TwitterClientException;
@@ -28,7 +29,7 @@ public class PostVisitor implements Visitor {
         this.ff4j = ff4j;
     }
 
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 3600000)
     public void postUnpublishedPosts() {
         if (ff4j.check(FEATURE_NEW_SCHEDULER)) {
             List<Schedulable> twitterPosts = twitterService.getUnpublishedTweetsNew();
@@ -51,6 +52,11 @@ public class PostVisitor implements Visitor {
 
     @Override
     public void postOnInstagram(Instagram instagram) {
+        try {
+            this.instagramService.postScheduledInstagram(instagram);
+        } catch (InstagramException e) {
+            log.error("Error posting instagram: " + instagram.getId(), e);
+        }
 
     }
 }

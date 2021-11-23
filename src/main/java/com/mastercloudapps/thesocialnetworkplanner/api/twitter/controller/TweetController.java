@@ -87,7 +87,7 @@ public class TweetController {
         return ResponseEntity.ok(tweetResponse);
     }
 
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 3600000)
     public void postScheduledTweets() throws TwitterClientException {
         if (!ff4j.check(FEATURE_NEW_SCHEDULER)) {
             this.twitterService.postScheduledTweets();
