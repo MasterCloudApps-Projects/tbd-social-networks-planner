@@ -20,6 +20,14 @@ jobs:
       run: mvn -B -Dtest=TwitterClientTest test
     - name: Run twitter service test
       run: mvn -B -Dtest=TwitterServiceTest test
+    - name: Run twitter authentication service test
+      run: mvn -B -Dtest=TwitterAuthenticationServiceTest test
+    - name: Run twitter authentication client test
+      run: mvn -B -Dtest=TwitterAuthenticationClientTest test
+    - name: Run instagram service test
+      run: mvn -B -Dtest=InstagramServiceTest test
+    - name: Run instagram client test
+      run: mvn -B -Dtest=InstagramRestClientTest test
   build:
     name: Build Java application
     runs-on: ubuntu-20.04
