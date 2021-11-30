@@ -1,32 +1,32 @@
 # TBD-SOCIAL-NETWORKS-PLANNER
 
-Este proyecto consiste en una aplicación desarrollada por el método de TBD que permite la interacción con Twitter e Instagram ya sea posteando al momento o programando dicho post a modo de scheduler.
+This project consists in an application developed with the TBD technique, the application allows the user to interact with Twitter and Instagram by on demand or scheduled posting.
 
-Es un monolito desplegado sobre heroku integrado con una base de datos PostgreSQL la cual utilizamos para la gestión de los posts utilizando también un PAAS, en este caso AWS S3, para el almacenamiento de las imágenes.
+It is a monolith deployed in heroku with a PostgreSQL database, we use that database to manage the posts images with the AWS S3 PAAS.
 
-Disponemos de dos pipelines que se ejecutan:
-- `main.yml`: Al hacer un push sobre main
-- `main-pr.yml`: Al hacer un merge request sobre main
+We have two pipelines that runs:
+- `main.yml`: On pushing to main
+- `main-pr.yml`: On a pull request over main
 
-El primero ejecuta los tests, en caso de que vayan OK, hace el build del proyecto, publica la imagen en Heroku Registry y en DockerHub y despliega la aplicación en Heroku.
-El segundo simplemente ejecuta los tests y en caso de que vayan OK hace el build del proyecto.
+The first runs the tests, in case of ok, it builds the project, generates an image and publishes it into Heroku Registry and DockerHub, finally deploys the application in Heroku.
+The second one just runs the tests, in case of ok, it builds the project.
 
-Para desplegarlo y testearlo en local disponemos de varios perfiles:
-- test: Para la ejecución de los tests, con BBDD H2 y no tiene habilitado el HTTPS
-- dev: Para las pruebas en local, con BBDD H2 y con HTTPS
-- flyway: Para probar el correcto funcionamiento de los scripts de flyway. Habría que ejecutar el siguiente comando para levantar un Docker con una BBDD PostgreSQL
+We have several profiles for local deploy and testing:
+- test: For the test execution, with an H2 database. HTTPS is disabled.
+- dev: For the local testing, with an H2 database. HTTPS is enabled.
+- flyway: For testing the FlyWay scripts behaviour. We may run the following command to start a PostgreSQL database Docker container.
   ```
   docker run -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
   ```
 
-El proyecto está configurado para trabajar con HTTPS por lo tanto habría que instalar los certificados que encontramos en la raíz del proyecto: `keystore.p12` y `mycertificate.cer`.
+The project configuration allows us to work with HTTPS, that is why we should install the certificates located at root project: `keystore.p12` y `mycertificate.cer`.
 
-Al utilizar S3, deberemos configurar también en nuestro equipo el archivo credentials, si es MAC o Linux en la ruta `~/.aws/credentials`, si es Windows en `C:\Users\{tu_usuario}\.aws\credentials` con las variables `aws_access_key_id` y `aws_secret_access_key` que te proporciona AWS al crear un usuario IAM con tipo de acceso mediante programación y con el permiso AmazonS3FullAcces.  
+Using S3, implies that we should also configure the credentials file, if it is Linux or Mac, we will create it in `~/.aws/credentials`, if it is Windows, we will create it in `C:\Users\{tu_usuario}\.aws\credentials`. We have to add the following variables, `aws_access_key_id` and `aws_secret_access_key`, theese variables are provided by AWS, when you create an IAM user with programmaticaly acces and the AmazonS3FullAcces permission.
 
-Por último, para poder ejecutar el proyecto deberemos informar una serie de variables para la configuración inicial:
+Finally, we should set some variables to be able to run the project:
 
-- CONSUMER_KEY: Consumer Key del API de Twitter
-- CONSUMER_SECRET: Secret de la Key del API de Twitter
-- INSTAGRAM_ACCESS_TOKEN: Token de la API de Instagram/Facebook
-- AWS_S3_BUCKET_NAME: Nombre del bucket de S3
-- AWS_S3_REGION: Región del bucket de S3
+- CONSUMER_KEY: Twitter API Consumer Key
+- CONSUMER_SECRET: Twitter API Secret
+- INSTAGRAM_ACCESS_TOKEN: Instagram/Facebook API token
+- AWS_S3_BUCKET_NAME: S3 bucket name
+- AWS_S3_REGION: S3 bucket region
