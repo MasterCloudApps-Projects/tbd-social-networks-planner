@@ -1,5 +1,8 @@
 # TBD-SOCIAL-NETWORKS-PLANNER
 
+![diagrama-tbd-social-network](https://user-images.githubusercontent.com/42999826/144487980-87618975-8039-41d6-8221-06df54fc18f9.png)
+
+
 This project consists in an application developed with the TBD technique, the application allows the user to interact with Twitter and Instagram by on demand or scheduled posting.
 
 It is a monolith deployed in heroku with a PostgreSQL database, we use that database to manage the posts images with the AWS S3 PAAS.
@@ -10,6 +13,8 @@ We have two pipelines that runs:
 
 The first runs the tests, in case of ok, it builds the project, generates an image and publishes it into Heroku Registry and DockerHub, finally deploys the application in Heroku.
 The second one just runs the tests, in case of ok, it builds the project.
+
+Finally, when the action deploys the application we can see all the possible calls to the api in the following URL: [Swagger TBD-SOCIAL-NETWORK-PLANNER](https://ais-tbd-social-networks.herokuapp.com/swagger-ui.html)
 
 We have several profiles for local deploy and testing:
 - test: For the test execution, with an H2 database. HTTPS is disabled.
