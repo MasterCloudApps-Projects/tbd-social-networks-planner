@@ -32,7 +32,7 @@ Finally, we should set some variables to be able to run the project:
 - AWS_S3_BUCKET_NAME: S3 bucket name
 - AWS_S3_REGION: S3 bucket region
 
-##More info ...  
+## More info ...  
 This application interacts with both Twitter and Instagram Graph Api. For each API we use a different way of communication.
 
 - Click [here](docs/ExternalAPIs.md) to know more about how we use Twitter and Instagram APIs, how you can be authenticated to post using tbd-networks-social-planner, etc. 

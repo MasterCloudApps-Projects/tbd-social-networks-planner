@@ -1,8 +1,9 @@
 
-##EXTERNAL APIs: TWITTER AND INSTAGRAM
+## EXTERNAL APIs: TWITTER AND INSTAGRAM
+
 This application interacts with both Twitter and Instagram Graph Api. For each API we use a different way of communication. We want to explore the possibilities that we have. So, for one API we have used a library and for the other one we made the calls directly to the API.
 
-##Twitter API:
+## Twitter API:
 
 To communicate our application with Twitter, we have created a Twitter Developer Account. Once we created the account, we create our app project to publish on behalf the user.
 The twitter project is: social-networks-planner.
@@ -21,7 +22,7 @@ To manage all the credentials and tokens related to this process, and also to ma
 
 If the user wants to use a different account, but he is already logged in, he just goes to auth endpoint again. The authentication process will be restarted.
 
-##Instagram Graph API:
+## Instagram Graph API:
 
 In this case, we are sending the request using **RestTemplate** direct to Instagram Graph API. This time we avoid using any library. 
 
