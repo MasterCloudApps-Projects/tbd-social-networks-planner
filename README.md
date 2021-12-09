@@ -17,7 +17,7 @@ The second one just runs the tests, in case of ok, it builds the project.
 Finally, when the action deploys the application we can see all the possible calls to the api in the following URL: [Swagger TBD-SOCIAL-NETWORK-PLANNER](https://ais-tbd-social-networks.herokuapp.com/swagger-ui.html)
 
 We have several profiles for local deploy and testing:
-- test: For the test execution, with an H2 database. HTTPS is disabled.
+- test: For the test execution, with an H2 database. HTTPS is disabled
 - dev: For the local testing, with an H2 database. HTTPS is enabled.
 - flyway: For testing the FlyWay scripts behaviour. We may run the following command to start a PostgreSQL database Docker container.
   ```
