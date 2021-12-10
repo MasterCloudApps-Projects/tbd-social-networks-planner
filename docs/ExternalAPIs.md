@@ -7,7 +7,7 @@ This application interacts with both Twitter and Instagram Graph Api. For each A
 
 To communicate our application with Twitter, we have created a Twitter Developer Account. Once we created the account, we create our app project to publish on behalf the user.
 The twitter project is: social-networks-planner.
-When you post a tweet using our application you will se a reference (next to the date and hour of the tweet) of this app. To post on behalf other user, the user have to grant permissions to our application.
+When you post a tweet using our application you will see a reference (next to the date and hour of the tweet) of this app. To post on behalf other user, the user has to grant permissions to our application.
 
 **Steps to grant permissions to tbd-social-networks-planner:**
 - First of all the user has to call the auth endpoint: https://ais-tbd-social-networks.herokuapp.com/api/v1/twitter/auth
